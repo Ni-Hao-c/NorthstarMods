@@ -40,6 +40,7 @@ global function ShowTitanfallBlockHintToPlayer
 global function ShowLargePilotKillStreak
 global function ShowWaitingForMorePlayers
 
+
 global struct SmokeEvent{
 	vector position
 	float lifetime
@@ -55,6 +56,7 @@ global struct SpawnEvent{
 	string npcClassName
 	string aiSettings
 	string entityGlobalKey
+	string Shownews
 	bool shouldLoop = false
 	int titanType = 0
 	float spawnradius = 0.0
@@ -141,7 +143,8 @@ global string Cvar_gruntgrenade
 global string Cvar_spectreweapons
 global array<string> FD_SpectreWeapons
 
-const FD_TITAN_AOE_REACTTIME = 3 //This is in seconds
+global const FD_TITAN_AOE_REACTTIME = 3 //This is in seconds
+
 
 void function executeWave()
 {	

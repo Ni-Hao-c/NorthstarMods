@@ -199,6 +199,9 @@ void function GamemodeFD_Init()
 	AddOnTetherCallback( FD_OnTetherTrapTriggered )
 	AddSonarStartCallback( FD_OnSonarStart )
 	ScoreEvent_SetupEarnMeterValuesForFrontierDefense()
+
+	//mod
+	AddCallback_OnTitanDoomed( addshieldHealth )
 	
 	difficultyLevel = FD_GetDifficultyLevel() //Refresh this only on map load, to avoid midgame commands messing up with difficulties (i.e setting mp_gamemode fd_hard midgame in a regular match through console on local host would immediately make Stalkers spawns with EPG)
 	elitesAllowed = GetConVarBool( "ns_fd_allow_elite_titans" )
@@ -703,6 +706,11 @@ bool function runWave( int waveIndex, bool shouldDoBuyTime )
 	if( !IsHarvesterAlive( fd_harvester.harvester ) )
 	{
 		print( "Stopping Wave, Harvester Died" )
+		foreach( entity player in GetPlayerArray() )
+		{
+			if ( IsAlive( player ) )
+				player.Die()
+		}//debug
 		SetGlobalNetBool( "FD_waveActive", false )
 		float totalDamage = 0.0
 		array<float> highestDamage = [ 0.0, 0.0, 0.0 ]
@@ -1144,8 +1152,9 @@ void function FD_Epilogue_threaded()
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowGameStats", Time() + 19 )
 	}
 	
-	wait 20
-	SetGameState(eGameState.Postmatch)
+	wait 10
+	CheckMap()
+	//SetGameState(eGameState.Postmatch)
 }
 
 
@@ -3787,4 +3796,55 @@ function HTUseBatteryFunc( batteryPortvar, playervar )
 	
 	turret.SetHealth( turret.GetMaxHealth() )
     turret.SetShieldHealth( 2500 )
+}
+
+
+//===============================================================//
+
+void function addshieldHealth ( entity titan, var damageInfo ) //BIAOJI1
+{
+
+	if ( !IsAlive( titan )  )
+		return
+	if (titan.IsNPC())
+		return
+
+	entity Soul = titan.GetTitanSoul()
+	Soul=titan.GetTitanSoul()
+	int Health = Soul.GetHealth()
+
+			printt("GetHealth", Health)
+           	Soul.SetShieldHealthMax(8750)
+        	Soul.SetShieldHealth(8750)
+
+
+
+}
+
+void function CheckMap()
+{
+
+
+	array<string> mapss = []
+
+	//mapss.append("mp_grave")
+	mapss.append("mp_glitch")
+	mapss.append("mp_black_water_canal")
+	mapss.append("mp_thaw" )
+	mapss.append("mp_eden")
+	mapss.append("mp_complex3")
+	mapss.append("mp_forwardbase_kodai")
+	mapss.append("mp_rise")
+	mapss.append("mp_drydock")
+	
+	string mapa=mapss[ RandomInt( mapss.len() ) ] 
+
+	string mapaa = GetMapName()
+
+	if ( mapa  != mapaa )
+		GameRules_ChangeMap(  mapa	, "fd_master" )
+	else
+		GameRules_ChangeMap(  "mp_homestead", "fd_master" )
+
+
 }

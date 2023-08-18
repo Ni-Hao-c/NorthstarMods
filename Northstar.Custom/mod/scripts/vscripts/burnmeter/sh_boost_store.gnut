@@ -41,7 +41,7 @@ global function GetPlayerMoney
 global function GetTeamReserve
 global function UpdateTeamReserve
 
-const int MAX_MONEY = 5000
+const int MAX_MONEY = 10000
 const float BOOST_STORE_TRIGGER_RADIUS = 300
 const int BOOST_STORE_DEFAULT_EXCHANGE = 100
 

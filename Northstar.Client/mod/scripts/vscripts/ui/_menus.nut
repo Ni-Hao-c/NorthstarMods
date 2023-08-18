@@ -187,7 +187,6 @@ bool function UICodeCallback_LevelLoadingStarted( string levelname )
 	CloseAllDialogs()
 
 	uiGlobal.loadingLevel = levelname
-	uiGlobal.isLoading = true
 
 	StopMusic()
 
@@ -236,7 +235,6 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 	}
 
 	uiGlobal.loadingLevel = ""
-	uiGlobal.isLoading = false
 	Signal( uiGlobal.signalDummy, "LevelFinishedLoading" )
 }
 

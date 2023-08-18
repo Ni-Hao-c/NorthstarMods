@@ -57,6 +57,9 @@ classes
 	import npc_super_spectre_burnmeter.txt
 	import npc_super_spectre_aitdm.txt
 	import npc_super_spectre_fd.txt
+	
+
+
 	import npc_super_spectre_calmer.txt
 	import npc_titan.txt
 	import npc_titan_arc.txt

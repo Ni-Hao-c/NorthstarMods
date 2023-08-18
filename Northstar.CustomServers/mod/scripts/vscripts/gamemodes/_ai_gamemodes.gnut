@@ -62,11 +62,11 @@ void function AiGameModes_SpawnDropShip( vector pos, vector rot, int team, int c
 }
 
 
-void function AiGameModes_SpawnDropPod( vector pos, vector rot, int team, string content /*( ͡° ͜ʖ ͡°)*/, void functionref( array<entity> guys ) squadHandler = null, int flags = 0 )
+void function AiGameModes_SpawnDropPod( vector pos, vector rot, int team, string content /*( ͡° ͜ʖ ͡°)*/, void functionref( array<entity> guys ) squadHandler = null )
 {
 	entity pod = CreateDropPod( pos, <0,0,0> )
 	
-	InitFireteamDropPod( pod, flags )
+	InitFireteamDropPod( pod )
 		
 	waitthread LaunchAnimDropPod( pod, "pod_testpath", pos, rot )
 

@@ -741,6 +741,16 @@ void function TitanShieldRegenThink_Internal( entity soul )
 		soul.SetShieldHealth( 0 )
 
 	int lastShieldHealth = soul.GetShieldHealth()
+	string Mode = GameRules_GetGameMode()
+   	if (Mode == "fd_insane"|| Mode == "fd_master" )
+    {
+        
+         entity titan = soul.GetTitan()
+            if (   titan.GetHealth()< 2500)
+            {
+            	lastShieldHealth = soul.GetShieldHealth() +5000
+            }
+    }
 	bool shieldHealthSound = false
 	int maxShield = soul.GetShieldHealthMax()
 	float lastTime = Time()

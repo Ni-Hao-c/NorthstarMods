@@ -206,5 +206,5 @@ npc_super_spectre
 	reactSurprised_maxRadius		2000
 	reactSurprised_distDelta		600
 
-	nuke_on_death					1
+	nuke_on_death					0
 }

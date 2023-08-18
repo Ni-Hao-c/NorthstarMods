@@ -309,20 +309,20 @@ void function LockMapButton( var element )
 bool function IsLocked( string map )
 {
 	
-	bool sp = map.find( "sp_" ) == 0 && PrivateMatch_GetSelectedMode() != "sp_coop"
-	if ( sp )
-		return true
+	// bool sp = map.find( "sp_" ) == 0 && PrivateMatch_GetSelectedMode() != "sp_coop"
+	// if ( sp )
+	// 	return true
 
-	if ( IsItemInEntitlementUnlock( map ) && IsValid( GetUIPlayer() ) )
-	{
-		if ( IsItemLocked( GetUIPlayer(), map ) && GetCurrentPlaylistVarInt( map + "_available" , 0 ) == 0 )
-		{
-			return true
-		}
-	}
+	// if ( IsItemInEntitlementUnlock( map ) && IsValid( GetUIPlayer() ) )
+	// {
+	// 	if ( IsItemLocked( GetUIPlayer(), map ) && GetCurrentPlaylistVarInt( map + "_available" , 0 ) == 0 )
+	// 	{
+	// 		return true
+	// 	}
+	// }
 	
-	if ( !PrivateMatch_IsValidMapModeCombo( map, PrivateMatch_GetSelectedMode() ) )
-		return true
+	// if ( !PrivateMatch_IsValidMapModeCombo( map, PrivateMatch_GetSelectedMode() ) )
+	// 	return true
 	
 	
 	return false

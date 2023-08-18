@@ -192,7 +192,7 @@ void function executeWave()
 			}
 		}
 		
-		if ( GetGlobalNetInt( "FD_AICount_Current" ) >= 10 )
+		if ( GetGlobalNetInt( "FD_AICount_Current" ) >= 2 )
 		{
 			//Kill Cloak Drones beforehand when a wave is about to end to avoid softlocking
 			array<entity> droneArray = GetNPCCloakedDrones()

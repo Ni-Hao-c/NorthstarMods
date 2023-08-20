@@ -247,8 +247,8 @@ void function initFrontierDefenseData()
 	wave2.append(CreateWaitForTimeEvent( 0.6, index++ ) )
 	wave2.append(CreateWaitUntilAliveEvent( 16, index++ ) )
 
-	wave2.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93,-82.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
-	wave2.append(CreateSpawnDroneEvent(	< 2548.79  ,-4935.57 , 232.293 >,< 0 , -90 , 0 >,"closeDrone2",index++)) //右路路远closeDrone2
+	wave2.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93,-02.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
+	wave2.append(CreateSpawnDroneEvent(	< 2548.79  ,-4935.57 , 332.293 >,< 0 , -90 , 0 >,"closeDrone2",index++)) //右路路远closeDrone2
 	wave2.append(CreateWaitUntilAliveEvent( 16, index++ ) )
 	wave2.append(CreateSuperSpectreEvent(< 3598 , -1424 , -388 >,< 0 , 180 , 0 >,"",index++))
 	wave2.append(CreateWaitForTimeEvent( 0.5, index++ ) )
@@ -406,8 +406,8 @@ void function initFrontierDefenseData()
 	wave4.append(CreateSuperSpectreEvent(< -342 , 3430 , -464 >,< 0 , -80 , 0 >,"",index++))
 	wave4.append(CreateWaitForTimeEvent(0.5,index++))
 	wave4.append(CreateWaitUntilAliveEvent( 4, index++ ) )
-	wave4.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93,-102.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
-	wave4.append(CreateSpawnDroneEvent(	< 2548.79  ,-4935.57 , 300.293 >,< 0 , -90 , 0 >,"closeDrone2",index++)) //右路路远closeDrone2
+	wave4.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93,-2.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
+	wave4.append(CreateSpawnDroneEvent(	< 2548.79  ,-4935.57 , 400.293 >,< 0 , -90 , 0 >,"closeDrone2",index++)) //右路路远closeDrone2
 	wave4.append(CreateWaitForTimeEvent(0.5,index++))
 
 
@@ -723,9 +723,9 @@ void function initFrontierDefenseData()
 	wave5.append(CreateWaitForTimeEvent( 0.8, index++ ) )
 	//wave5.append(CreateMortarTitanEvent(<  3829.26, -2413.89 , -332.645 >,< -0, 0, 0>,index++))
 	wave5.append(CreateWaitForTimeEvent( 0.8, index++ ) )
-	wave5.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93,-100.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
+	wave5.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93,-0.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
 	wave5.append(CreateWaitForTimeEvent( 0.8, index++ ) )
-	wave5.append(CreateSpawnDroneEvent(	< 2548.79  ,-4935.57 , 232.293 >,< 0 , -90 , 0 >,"closeDrone2",index++)) //右路路远closeDrone2
+	wave5.append(CreateSpawnDroneEvent(	< 2548.79  ,-4935.57 , 432.293 >,< 0 , -90 , 0 >,"closeDrone2",index++)) //右路路远closeDrone2
 	wave5.append(CreateSuperSpectreEvent(< 3384 , -3176 , -303 >,< 0 , 180 , 0 >,"",index++))
 	wave5.append(CreateWaitForTimeEvent( 0.5, index++ ) )
 	wave5.append(CreateSuperSpectreEvent(< 3134 , -2828 , -330 >,< 0 , 180 , 0 >,"",index++))
@@ -818,6 +818,6 @@ void function initFrontierDefenseData()
 	wave5.append(CreateWaitForTimeEvent( 0.5, index++ ) )
 	wave5.append(CreateLegionTitanEvent(< -2254 , 2209 , -437 >,< 0 , -28 , 0 >,"",index++))
 	wave5.append(CreateWaitForTimeEvent( 4.5, index++ ) )
-	wave5.append(CreateSpawnDroneEvent(< 3056 , -2845 , 2816 >,< 0 , 0 , 0 >,"rightDrone",0))
+	wave5.append(CreateSpawnDroneEvent(< 3056 , -2845 , 2916 >,< 0 , 0 , 0 >,"rightDrone",0))
     waveEvents.append(wave5)
 }

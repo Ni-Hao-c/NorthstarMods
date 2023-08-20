@@ -2100,6 +2100,13 @@ void function fd_spawnCloakDrone( SmokeEvent smokeEvent, SpawnEvent spawnEvent,F
 		GlobalEventEntitys[spawnEvent.entityGlobalKey] <- npc
 	SetTargetName( npc, GetTargetNameForID( spawnEvent.spawnType ) )
 	AddMinimapForHumans( npc )
+	wait 150 //在某些关卡会卡住
+	if( IsValid( npc) && IsAlive( npc ) )
+				{
+					npc.Show()
+					npc.Solid()
+					npc.Die()
+				}
 }
 
 void function SpawnTick( SmokeEvent smokeEvent, SpawnEvent spawnEvent, FlowControlEvent flowControlEvent, SoundEvent soundEvent )

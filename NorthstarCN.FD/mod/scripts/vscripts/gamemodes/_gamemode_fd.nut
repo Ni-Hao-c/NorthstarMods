@@ -2289,9 +2289,7 @@ void function OnNpcDeath( entity victim, entity attacker, var damageInfo )
 			if( IsValid( battery ) )
 				battery.e.fxArray.append( StartParticleEffectOnEntity_ReturnEntity( battery, GetParticleSystemIndex( fx ), FX_PATTACH_POINT_FOLLOW, attachID ) )
 			return
-		case "npc_marvin":
-		case "npc_prowler":
-		case "npc_pilot_elite":
+
 		case "npc_turret_sentry":
 			return
 	}
@@ -2352,6 +2350,11 @@ void function OnNpcDeath( entity victim, entity attacker, var damageInfo )
 
 		switch ( victim.GetClassName() )
 		{
+			case "npc_marvin":
+			case "npc_prowler":
+				money = 300
+				break
+			case "npc_pilot_elite":
 			case "npc_soldier":
 				AddPlayerScore( attacker, "FDGruntKilled" )
 				attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, FD_SCORE_GRUNT )

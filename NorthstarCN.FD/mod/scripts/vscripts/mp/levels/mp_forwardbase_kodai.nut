@@ -13,7 +13,7 @@ const array<vector> BATTERY_SPAWNS = [
 
 void function CodeCallback_MapInit()
 {
-	Night_Combat_Settings_Init()
+
 	// Battery spawns (in LTS/Free Agents) are in old locations, so we move them to the proper locations
 	AddSpawnCallbackEditorClass( "script_ref", "script_power_up_other", FixBatterySpawns )
 
@@ -121,19 +121,3 @@ entity function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = 
 	return e
 }
 #endif
-
-void function Night_Combat_Settings_Init()
-{
-    AddCallback_OnClientConnected( OnClientConnected )
-}
-
-void function OnClientConnected( entity player )
-{
-    SetPlayerToNightSky( player )
-}
-
-void function SetPlayerToNightSky( entity player )
-{
-    player.SetSkyCamera( GetEnt( SKYBOXSPACE ) )
-    Remote_CallFunction_NonReplay( player, "ServerCallback_SetMapSettings", 1.0, false, null, null, null, null, null, 0.0, 0.5 )
-}

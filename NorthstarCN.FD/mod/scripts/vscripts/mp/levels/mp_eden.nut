@@ -14,7 +14,7 @@ void function initFrontierDefenseData()
 {
 
 	AddCallback_RegisterCustomFDContent( RegisterCustomFDContent )
-	
+
 	useCustomFDLoad = true
 
     shopPosition = < -2510.61, -2271.66 , 270.03>
@@ -24,11 +24,11 @@ void function initFrontierDefenseData()
 	FD_groundspawnPosition = < -2487.83, -2410.94, 80.03 >
 	FD_groundspawnAngles = < 0, 78.31, 0 >
 
-		
+
 	//FD_DropPodSpawns.append(< -2372, -1430, 72 >)
 	//FD_DropPodSpawns.append(< -682, -1113, 208 >)
 	//FD_DropPodSpawns.append(< -264, -2126, 260 >)
-	
+
 	waveAnnouncement.append("fd_introEasy")
 	waveAnnouncement.append("fd_waveTypeInfantry")
 	waveAnnouncement.append("fd_introHard")
@@ -443,7 +443,7 @@ void function initFrontierDefenseData()
 	 wave4.append(CreatemarvinEvent( < 2251.12, 2340.26, 63.7953 >,"",index++))
 	 wave4.append(CreatemarvinEvent(< 1041.99, 294.011, 67.8343 >,"",index++))
 	 wave4.append(CreatemarvinEvent(< 3904.72, -772.819, 72.0313 >,"",index++))
-	 
+
 	 wave4.append(CreateWaitForTimeEvent(2,index++))
 	 wave4.append( CreateSpawndroneworkerEvent( < -2926.79, 3085.59, 598.687 > , < 0, -45.7206, 0 >,"fly3", index++, false ) )
 	 wave4.append(CreateWaitForTimeEvent(2,index++))
@@ -570,9 +570,9 @@ void function initFrontierDefenseData()
 			wave5_0()
 			 break;
 	 }
-   
 
-	
+
+
 }
 void function wave5_0()
 {
@@ -855,6 +855,8 @@ void function wave5_0()
 }
 void function wave5_1()
 {
+	Night_Combat_Settings_Init()
+
 	int index = 1
 	array<WaveEvent> wave5
 	wave5.append(CreateWarningEvent( FD_IncomingWarnings.MediumWave, index++ ))
@@ -1018,52 +1020,52 @@ void function wave5_1()
 	wave5.append(CreateIonnukeTitanEvent(< 1183.71, -58.0543, 59.7957 >,< 0 , 70 , 0 >,"titan1",index++))
 	wave5.append(CreateWaitForTimeEvent(1.3,index++))
 	wave5.append(CreateRoninnukeTitanEvent(< 2519.09, 141.747, 63.7954 >,< 0 , -10 , 0 >,"titan4",0))
-	
+
 	waveEvents.append(wave5)
 
 }
 
 void function RegisterCustomFDContent()
 {
-	
-	
+
+
 	// entity FDProp1 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -2016, 176 >, < 0, -90, 0 >, 6 )
 	// FDProp1.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp1, false )
-	
+
 	// entity FDProp2 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -2144, 176 >, < 0, -90, 0 >, 6 )
 	// FDProp2.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp2, false )
-	
+
 	// entity FDProp3 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -2272, 176 >, < 0, -90, 0 >, 6 )
 	// FDProp3.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp3, false )
-	
+
 	// entity FDProp4 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -2016, 272 >, < 0, -90, 0 >, 6 )
 	// FDProp4.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp4, false )
-	
+
 	// entity FDProp5 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -2144, 272 >, < 0, -90, 0 >, 6 )
 	// FDProp5.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp5, false )
-	
+
 	// entity FDProp6 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -2272, 272 >, < 0, -90, 0 >, 6 )
 	// FDProp6.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp6, false )
-	
+
 	// entity FDProp7 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -2400, 176 >, < 0, -90, 0 >, 6 )
 	// FDProp6.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp7, false )
-	
+
 	// entity FDProp8 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -1888, 176 >, < 0, -90, 0 >, 6 )
 	// FDProp8.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp8, false )
-	
+
 	// entity FDProp9 = CreatePropDynamicLightweight( $"models/imc_base/cargo_container_imc_01_blue.mdl", < -921, -1888, 272 >, < 0, -90, 0 >, 6 )
 	// FDProp9.SetAIObstacle( true )
 	// ToggleNPCPathsForEntity( FDProp9, false )
 
-		
+
 	routes[ "a1" ] <- []
 	routes[ "a1" ].append( < -1153.71,-9.48, 796.51>  )
 	routes[ "a1" ].append(  < -1238.71,-132.40, 588> )
@@ -1078,7 +1080,7 @@ void function RegisterCustomFDContent()
 	routes[ "a2" ].append( < -1292.4, -1999.98, 58.2624 >  )
 
 
-	
+
 	routes[ "a3" ] <- []
 	routes[ "a3" ].append(  < 641.927, -190.789, 61.5337 >  )
 	routes[ "a3" ].append(  < -1717.21, -153.998, 65.9879 >  )
@@ -1107,7 +1109,7 @@ void function RegisterCustomFDContent()
 
 
 
-	
+
 	routes[ "titan4" ] <- []
 	routes[ "titan4" ].append( < -1950.9, -63.5382, 66.5513 >)
 	routes[ "titan4" ].append( < -1957.34, -938.738, 72.0413 > )
@@ -1115,46 +1117,46 @@ void function RegisterCustomFDContent()
 	routes[ "titan4" ].append( < -1994.58, -2010.75, 48.588 >  )
 
 
-	
-	
+
+
 	routes[ "leftRoadMain" ] <- []
 	routes[ "leftRoadMain" ].append( < -2774, 2067, 173 > )
 	routes[ "leftRoadMain" ].append( < -2544, 269, 72 > )
 	routes[ "leftRoadMain" ].append( < -1893, -677, 176 > )
 	routes[ "leftRoadMain" ].append( < -2095, -1708, 52 > )
-	
+
 	routes[ "roadDesertMain" ] <- []
 	routes[ "roadDesertMain" ].append( < 2636, 1113, 61 > )
 	routes[ "roadDesertMain" ].append( < 2488, -172, 63 > )
 	routes[ "roadDesertMain" ].append( < -283, -177, 57 > )
 	routes[ "roadDesertMain" ].append( < -1609, -671, 182 > )
 	routes[ "roadDesertMain" ].append( < -1172, -1477, 77 > )
-	
+
 	routes[ "eastDesertRoadMain" ] <- []
 	routes[ "eastDesertRoadMain" ].append( < 4285, -1363, 65 > )
 	routes[ "eastDesertRoadMain" ].append( < 809, -1753, 63 > )
 	routes[ "eastDesertRoadMain" ].append( < -1121, -1697, 84 > )
-	
+
 	routes[ "westRoadFlank" ] <- []
 	routes[ "westRoadFlank" ].append( < 1353, 2090, 64 > )
 	routes[ "westRoadFlank" ].append( < 430, 1288, 56 > )
 	routes[ "westRoadFlank" ].append( < -1038, 1302, 66 > )
 	routes[ "westRoadFlank" ].append( < -1579, -670, 176 > )
 	routes[ "westRoadFlank" ].append( < -2095, -1708, 52 > )
-	
+
 	routes[ "cliffsideRoad" ] <- []
 	routes[ "cliffsideRoad" ].append( < -258, 3033, 108 > )
 	routes[ "cliffsideRoad" ].append( < -357, 1473, 66 > )
 	routes[ "cliffsideRoad" ].append( < -1295, 303, 63 > )
 	routes[ "cliffsideRoad" ].append( < -1596, -673, 176 > )
 	routes[ "cliffsideRoad" ].append( < -1210, -1604, 90 > )
-	
+
 	routes[ "southRoadInfantry" ] <- []
 	routes[ "southRoadInfantry" ].append( < -3253, 567, 54 > )
 	routes[ "southRoadInfantry" ].append( < -2414, 48, 61 > )
 	routes[ "southRoadInfantry" ].append( < -2503, -923, 72 > )
 	routes[ "southRoadInfantry" ].append( < -2426, -1864, 72 > )
-	
+
 	routes[ "desertBuildingsInfantry" ] <- []
 	routes[ "desertBuildingsInfantry" ].append( < 2498, 623, 63 > )
 	routes[ "desertBuildingsInfantry" ].append( < 2069, 460, 72 > )
@@ -1162,13 +1164,13 @@ void function RegisterCustomFDContent()
 	routes[ "desertBuildingsInfantry" ].append( < -641, -191, 63 > )
 	routes[ "desertBuildingsInfantry" ].append( < -881, -717, 208 > )
 	routes[ "desertBuildingsInfantry" ].append( < -955, -1058, 208 > )
-	
+
 	routes[ "eastBuildingsInfantry" ] <- []
 	routes[ "eastBuildingsInfantry" ].append( < 2335, -907, 63 > )
 	routes[ "eastBuildingsInfantry" ].append( < 1430, -980, 68 > )
 	routes[ "eastBuildingsInfantry" ].append( < 509, -1270, 68 > )
 	routes[ "eastBuildingsInfantry" ].append( < -955, -1058, 208 > )
-	
+
 	routes[ "desertDeepMainAvenue" ] <- []
 	routes[ "desertDeepMainAvenue" ].append( < 4804, 1470, 92 > )
 	routes[ "desertDeepMainAvenue" ].append( < 2489, 912, 58 > )
@@ -1176,12 +1178,12 @@ void function RegisterCustomFDContent()
 	routes[ "desertDeepMainAvenue" ].append( < -281, -269, 56 > )
 	routes[ "desertDeepMainAvenue" ].append( < -1892, -673, 176 > )
 	routes[ "desertDeepMainAvenue" ].append( < -2112, -1688, 51 > )
-	
+
 	routes[ "eastCrates" ] <- []
 	routes[ "eastCrates" ].append( < 1828, -3108, 45 > )
 	routes[ "eastCrates" ].append( < 921, -1737, 63 > )
 	routes[ "eastCrates" ].append( < -1151, -1794, 84 > )
-	
+
 	routes[ "droneMain" ] <- []
 	routes[ "droneMain" ].append( < 2397, 749, 422 > )
 	routes[ "droneMain" ].append( < 2466, -406, 422 > )
@@ -1193,7 +1195,7 @@ void function RegisterCustomFDContent()
 	routes[ "droneMain" ].append( < -382, 1526, 67 > )
 	routes[ "droneMain" ].append( < 802, 1257, 55 > )
 	routes[ "droneMain" ].append( < 1580, 933, 56 > )
-	
+
 	routes[ "droneReverse" ] <- []
 	routes[ "droneReverse" ].append( < 2397, 749, 422 > )
 	routes[ "droneReverse" ].append( < 1580, 933, 56 > )
@@ -1205,7 +1207,7 @@ void function RegisterCustomFDContent()
 	routes[ "droneReverse" ].append( < -788, -1832, 81 > )
 	routes[ "droneReverse" ].append( < 2127, -1621, 63 > )
 	routes[ "droneReverse" ].append( < 2466, -406, 422 > )
-	
+
 	routes[ "acrossAvenueInfantry" ] <- []
 	routes[ "acrossAvenueInfantry" ].append( < 2486, 465, 63 > )
 	routes[ "acrossAvenueInfantry" ].append( < 1433, 461, 67 > )
@@ -1217,8 +1219,8 @@ void function RegisterCustomFDContent()
 
 
 	routes[ "fly1" ] <- []
-	routes[ "fly1" ].append( < -34.5477, -5104.11, 563.012 >) 
-	routes[ "fly1" ].append( < -1512, -3691.07, 603.067 >  ) 
+	routes[ "fly1" ].append( < -34.5477, -5104.11, 563.012 >)
+	routes[ "fly1" ].append( < -1512, -3691.07, 603.067 >  )
 	routes[ "fly1" ].append( < -1861.46, -2219.1, 481.849 >  )
 
 	routes[ "fly2" ] <- []
@@ -1239,7 +1241,7 @@ void function RegisterCustomFDContent()
 	routes[ "fly4" ].append( < 83.2781, -200.295, 673.661 > )
 	routes[ "fly4" ].append( < -1207.7, -2156.69, 479.987 >  )
 
-		
+
 	routes[ "droneMain" ] <- []
 	routes[ "droneMain" ].append( < 2397, 749, 422 > )
 	routes[ "droneMain" ].append( < 2466, -406, 422 > )
@@ -1251,7 +1253,7 @@ void function RegisterCustomFDContent()
 	routes[ "droneMain" ].append( < -382, 1526, 67 > )
 	routes[ "droneMain" ].append( < 802, 1257, 55 > )
 	routes[ "droneMain" ].append( < 1580, 933, 56 > )
-	
+
 	routes[ "droneReverse" ] <- []
 	routes[ "droneReverse" ].append( < 2397, 749, 422 > )
 	routes[ "droneReverse" ].append( < 1580, 933, 56 > )
@@ -1264,7 +1266,7 @@ void function RegisterCustomFDContent()
 	routes[ "droneReverse" ].append( < 2127, -1621, 63 > )
 	routes[ "droneReverse" ].append( < 2466, -406, 422 > )
 
-	
+
 	AddStationaryAIPosition(< -2708.83, 456.663, 64.5469 >, eStationaryAIPositionTypes.LAUNCHER_REAPER)
 	AddStationaryAIPosition(< -2890, 1650.88, 154.404  >, eStationaryAIPositionTypes.LAUNCHER_REAPER)
 	AddStationaryAIPosition(< -2971.31, 3192.66, 188.649 >, eStationaryAIPositionTypes.LAUNCHER_REAPER)

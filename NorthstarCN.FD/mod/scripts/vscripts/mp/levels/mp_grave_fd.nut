@@ -24,6 +24,7 @@ void function wave_chioce()
 
 void function wave_0()
 {
+	Night_Combat_Settings_Init()
     shopPosition = < 1767.61, -4959.83 , 2244>
 	shopAngles = < 0, 0, 0 >
 	FD_spawnPosition = < 3820, -4181, 2242 >

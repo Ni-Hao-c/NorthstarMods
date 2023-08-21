@@ -191,7 +191,8 @@ void function GamemodeFD_Init()
 	AddStunLaserHealCallback( FD_StunLaserHealTeammate )
 	SetApplyBatteryCallback( FD_BatteryHealTeammate )
 	AddSmokeHealCallback( FD_SmokeHealTeammate )
-	SetUsedCoreCallback( FD_UsedCoreCallback )
+	//SetUsedCoreCallback( FD_UsedCoreCallback )
+	AddCallback_OnTitanCoreUsed( FD_UsedCoreCallback )
 
 	//Score Event
 	AddArcTrapTriggeredCallback( FD_OnArcTrapTriggered )

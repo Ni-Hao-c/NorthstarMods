@@ -829,7 +829,7 @@ void function wave5_0()
 	wave5.append(CreateWaitForTimeEvent( 0.6, index++ ) )
 	wave5.append(CreateSuperSpectreEvent(< 3696 , 2690 , 63 >,< 0 , -130 , 0 >,"",index++,1,"",250.0))
 	wave5.append(CreateWaitForTimeEvent( 5.0, index++ ) )
-	wave5.append(CreateWaitUntilAliveEvent( 6, index++ ) )\
+	wave5.append(CreateWaitUntilAliveEvent( 6, index++ ) )
 	wave5.append(CreateNukeTitanEvent(< 2355 , 2510 , 63 >,< 0 , -90 , 0 >,"",index++))
 	wave5.append(CreateWaitForTimeEvent( 0.5, index++ ) )
 	wave5.append(CreateNukeTitanEvent(< -2821 , 2958 , 177 >,< 0, -90, 0 >,"",index++))

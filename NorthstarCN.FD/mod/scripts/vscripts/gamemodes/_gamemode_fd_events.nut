@@ -296,7 +296,7 @@ WaveEvent function CreateSmokeEvent( vector position, float lifetime, int nextEv
 	return event
 }
 
-WaveEvent function CreateArcTitanEvent( vector origin, vector angles, string route, int nextEventIndex, int executeOnThisCall = 1, string entityGlobalKey = "", float spawnradius = 0.0 )
+WaveEvent function CreateArcTitanEvent( vector origin, vector angles, string route, int nextEventIndex, int executeOnThisCall = 1, string entityGlobalKey = "",int i = 0, float spawnradius = 0.0 )
 {
 	WaveEvent event
 	event.eventFunction = spawnArcTitan
@@ -504,7 +504,7 @@ WaveEvent function CreateGenericTitanSpawnWithAiSettingsEvent( string npcClassNa
 	return event
 }
 
-WaveEvent function CreateNukeTitanEvent( vector origin, vector angles, string route, int nextEventIndex, int executeOnThisCall = 1, string entityGlobalKey = "", float spawnradius = 0.0 )
+WaveEvent function CreateNukeTitanEvent( vector origin, vector angles, string route, int nextEventIndex, int executeOnThisCall = 1, string entityGlobalKey = "", int i = 0,float spawnradius = 0.0 )
 {
 	WaveEvent event
 	event.eventFunction = spawnNukeTitan

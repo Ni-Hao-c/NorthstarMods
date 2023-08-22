@@ -67,7 +67,7 @@ global struct FlowControlEvent{
 	int splitNextEventIndex
 	int waitAmount
 	int waitEntityType
-	array<string> waitGlobalDataKey 
+	array<string> waitGlobalDataKey
 }
 
 global struct SoundEvent{
@@ -77,7 +77,7 @@ global struct SoundEvent{
 global struct WaveEvent{
 	void functionref(SmokeEvent,SpawnEvent,FlowControlEvent,SoundEvent) eventFunction
 	bool shouldThread
-	int executeOnThisCall //will actually be executed when called this many times 
+	int executeOnThisCall //will actually be executed when called this many times
 	int timesExecuted
 	int nextEventIndex
 	SmokeEvent smokeEvent
@@ -147,17 +147,17 @@ global const FD_TITAN_AOE_REACTTIME = 3 //This is in seconds
 
 
 void function executeWave()
-{	
+{
 	int currentWave = GetGlobalNetInt( "FD_currentWave" ) + 1
 	int enemyCount
 	print( "Wave Start: " + currentWave )
 	thread runEvents( 0 )
-	
+
 	//Wait for all events to execute
 	while( IsHarvesterAlive( fd_harvester.harvester ) && !allEventsExecuted( GetGlobalNetInt( "FD_currentWave" ) ) )
 		WaitFrame()
 	print( "All events executed, waiting for enemies completion" )
-	
+
 	//Do a secondary wait for alive enemies after all events executed
 	while( IsHarvesterAlive( fd_harvester.harvester ) && GetGlobalNetInt( "FD_AICount_Current" ) > 0 )
 	{
@@ -169,29 +169,29 @@ void function executeWave()
 				case 10:
 				PlayFactionDialogueToTeam( "fd_waveCleanup" , TEAM_MILITIA )
 				break
-				
+
 				case 5:
 				PlayFactionDialogueToTeam( "fd_waveCleanup5" , TEAM_MILITIA )
 				break
-				
+
 				case 4:
 				PlayFactionDialogueToTeam( "fd_waveCleanup4" , TEAM_MILITIA )
 				break
-				
+
 				case 3:
 				PlayFactionDialogueToTeam( "fd_waveCleanup3" , TEAM_MILITIA )
 				break
-				
+
 				case 2:
 				PlayFactionDialogueToTeam( "fd_waveCleanup2" , TEAM_MILITIA )
 				break
-				
+
 				case 1:
 				PlayFactionDialogueToTeam( "fd_waveCleanup1" , TEAM_MILITIA )
 				break
 			}
 		}
-		
+
 		if ( GetGlobalNetInt( "FD_AICount_Current" ) >= 2 )
 		{
 			//Kill Cloak Drones beforehand when a wave is about to end to avoid softlocking
@@ -206,14 +206,14 @@ void function executeWave()
 				}
 			}
 		}
-		
+
 		WaitFrame()
 	}
 	print( "Enemy pool reached 0, doing a full npc scan" )
-	
+
 	//Lastly, ensure everyone is indeed dead to proceed
 	waitUntilLessThanAmountAlive( 0 )
-	
+
 	//Kill all unwanted Ticks from Reapers
 	print( "Purging all remaining Ticks deployed by Reapers" )
 	KillLooseTicksFromReapers()
@@ -228,7 +228,7 @@ void function KillLooseTicksFromReapers()
 	}
 }
 
-bool function allEventsExecuted( int waveIndex ) 
+bool function allEventsExecuted( int waveIndex )
 {
 	foreach( WaveEvent e in waveEvents[waveIndex] )
 	{
@@ -239,12 +239,12 @@ bool function allEventsExecuted( int waveIndex )
 }
 
 void function runEvents( int firstExecuteIndex )
-{	
+{
 	print( "Events Start" )
 	WaveEvent currentEvent = waveEvents[GetGlobalNetInt( "FD_currentWave" )][firstExecuteIndex]
-	
+
 	while(true)
-	{	
+	{
 		currentEvent.timesExecuted++
 		if(currentEvent.timesExecuted!=currentEvent.executeOnThisCall)
 			return
@@ -257,7 +257,7 @@ void function runEvents( int firstExecuteIndex )
 
 		else
 			currentEvent.eventFunction( currentEvent.smokeEvent, currentEvent.spawnEvent, currentEvent.flowControlEvent, currentEvent.soundEvent )
-			
+
 		if( currentEvent.nextEventIndex == 0 )
 		{
 			print( "Event Index 0 reached, finishing wave" )
@@ -740,136 +740,136 @@ WaveEvent function CreateWarningEvent( int warningType, int nextEventIndex, int 
 		case FD_IncomingWarnings.CloakDrone:
 		event.soundEvent.soundEventName = "fd_incCloakDroneClump"
 		break
-		
+
 		case FD_IncomingWarnings.ArcTitan:
 		event.soundEvent.soundEventName = "fd_incArcTitanClump"
 		break
-		
+
 		case FD_IncomingWarnings.Reaper:
 		event.soundEvent.soundEventName = "fd_incReaperClump"
 		break
-		
+
 		case FD_IncomingWarnings.MortarTitan:
 		event.soundEvent.soundEventName = "fd_incTitansMortarClump"
 		break
-		
+
 		case FD_IncomingWarnings.NukeTitan:
 		event.soundEvent.soundEventName = "fd_incTitansNukeClump"
 		break
-		
+
 		case FD_IncomingWarnings.ReaperAlt:
 		event.soundEvent.soundEventName = "fd_waveTypeReapers"
 		break
-		
+
 		case FD_IncomingWarnings.Ticks:
 		event.soundEvent.soundEventName = "fd_waveTypeTicks"
 		break
-		
+
 		case FD_IncomingWarnings.Stalkers:
 		event.soundEvent.soundEventName = "fd_waveTypeStalkers"
 		break
-		
+
 		case FD_IncomingWarnings.MortarSpectre:
 		event.soundEvent.soundEventName = "fd_waveTypeMortarSpectre"
 		break
-		
+
 		case FD_IncomingWarnings.ReaperTicks:
 		event.soundEvent.soundEventName = "fd_waveTypeReaperTicks"
 		break
-		
+
 		case FD_IncomingWarnings.Flyers:
 		event.soundEvent.soundEventName = "fd_waveTypeFlyers"
 		break
-		
+
 		case FD_IncomingWarnings.EliteTitan:
 		event.soundEvent.soundEventName = "fd_waveTypeEliteTitan"
 		break
-		
+
 		case FD_IncomingWarnings.Infantry:
 		event.soundEvent.soundEventName = "fd_waveTypeInfantry"
 		break
-		
+
 		case FD_IncomingWarnings.CloakDroneIntro:
 		event.soundEvent.soundEventName = "fd_waveTypeCloakDrone"
 		break
-		
+
 		case FD_IncomingWarnings.EnemyTitansIncoming:
 		event.soundEvent.soundEventName = "fd_waveTypeTitanReg"
 		break
-		
+
 		case FD_IncomingWarnings.MortarTitanIntro:
 		event.soundEvent.soundEventName = "fd_waveTypeTitanMortar"
 		break
-		
+
 		case FD_IncomingWarnings.NukeTitanIntro:
 		event.soundEvent.soundEventName = "fd_waveTypeTitanNuke"
 		break
-		
+
 		case FD_IncomingWarnings.ArcTitanIntro:
 		event.soundEvent.soundEventName = "fd_waveTypeTitanArc"
 		break
-		
+
 		case FD_IncomingWarnings.TitanfallBlocked:
 		event.soundEvent.soundEventName = "fd_waveNoTitanDrops"
 		break
-		
+
 		case FD_IncomingWarnings.PreNukeTitan:
 		event.soundEvent.soundEventName = "fd_soonNukeTitans"
 		break
-		
+
 		case FD_IncomingWarnings.PreMortarTitan:
 		event.soundEvent.soundEventName = "fd_soonMortarTitans"
 		break
-		
+
 		case FD_IncomingWarnings.PreArcTitan:
 		event.soundEvent.soundEventName = "fd_soonArcTitans"
 		break
-		
+
 		case FD_IncomingWarnings.Everything:
 		event.soundEvent.soundEventName = "fd_waveComboMultiMix"
 		break
-		
+
 		case FD_IncomingWarnings.LightWave:
 		event.soundEvent.soundEventName = "fd_introEasy"
 		break
-		
+
 		case FD_IncomingWarnings.MediumWave:
 		event.soundEvent.soundEventName = "fd_introMedium"
 		break
-		
+
 		case FD_IncomingWarnings.HeavyWave:
 		event.soundEvent.soundEventName = "fd_introHard"
 		break
-		
+
 		case FD_IncomingWarnings.NoMoreTitansInWave:
 		event.soundEvent.soundEventName = "fd_waveNoTitans"
 		break
-		
+
 		case FD_IncomingWarnings.ArcTitanAlt:
 		event.soundEvent.soundEventName = "fd_nagKillTitanEMP"
 		break
-		
+
 		case FD_IncomingWarnings.ComboNukeMortar:
 		event.soundEvent.soundEventName = "fd_waveComboNukeMortar"
 		break
-		
+
 		case FD_IncomingWarnings.ComboArcMortar:
 		event.soundEvent.soundEventName = "fd_waveComboArcMortar"
 		break
-		
+
 		case FD_IncomingWarnings.ComboArcNuke:
 		event.soundEvent.soundEventName = "fd_waveComboArcNuke"
 		break
-		
+
 		case FD_IncomingWarnings.ComboNukeCloak:
 		event.soundEvent.soundEventName = "fd_waveComboNukeCloak"
 		break
-		
+
 		case FD_IncomingWarnings.ComboNukeTrain:
 		event.soundEvent.soundEventName = "fd_waveComboNukeTrain"
 		break
 	}
-	
+
 	return event
 }
 
@@ -999,7 +999,7 @@ void function spawnSmoke( SmokeEvent smokeEvent, SpawnEvent spawnEvent, FlowCont
 {
 	vector skypos = GetSkyCeiling( smokeEvent.position )
 	vector groundpos = OriginToGround( skypos )
-	
+
 	printt( "Spawning Smoke at: " + smokeEvent.position )
 	SmokescreenStruct smokescreen
 	smokescreen.smokescreenFX = $"P_smokescreen_FD"
@@ -1013,14 +1013,14 @@ void function spawnSmoke( SmokeEvent smokeEvent, SpawnEvent spawnEvent, FlowCont
 	smokescreen.deploySound3p = "SmokeWall_Activate"
 	smokescreen.stopSound1p = "SmokeWall_Stop"
 	smokescreen.stopSound3p = "SmokeWall_Stop"
-	
+
 	float fxOffset = 200.0
 	float fxHeightOffset = 148.0
-	
+
 	smokescreen.fxOffsets = [ < -fxOffset, 0.0, 20.0>, <0.0, fxOffset, 20.0>, <0.0, -fxOffset, 20.0>, <0.0, 0.0, fxHeightOffset>, < -fxOffset, 0.0, fxHeightOffset> ]
-	
+
 	EmitSoundAtPosition( TEAM_UNASSIGNED, groundpos, "SmokeWall_Launch" )
-	
+
 	entity smokenade = CreateEntity( "prop_script" )
 	entity mover = CreateOwnedScriptMover( smokenade )
 	smokenade.SetValueForModelKey( $"models/weapons/bullets/projectile_rocket_large.mdl" )
@@ -1089,7 +1089,7 @@ void function waitForDeathOfEntitys( SmokeEvent smokeEvent, SpawnEvent spawnEven
 }
 
 void function waitForLessThanAliveTyped( SmokeEvent smokeEvent, SpawnEvent spawnEvent, FlowControlEvent flowControlEvent, SoundEvent soundEvent )
-{	
+{
 	while( IsHarvesterAlive( fd_harvester.harvester ) )
 	{
 		int amount
@@ -1123,7 +1123,7 @@ void function spawnArcTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, FlowC
 		TakeWeaponsForArray( npc, npc.GetMainWeapons() )
 		npc.GiveWeapon( "mp_titanweapon_arc_cannon" )
 	}
-	
+
 	npc.DisableNPCFlag( NPC_ALLOW_INVESTIGATE | NPC_USE_SHOOTING_COVER | NPC_ALLOW_PATROL )
 	npc.EnableNPCMoveFlag( NPCMF_PREFER_SPRINT )
 	npc.SetDangerousAreaReactionTime( FD_TITAN_AOE_REACTTIME )
@@ -1281,11 +1281,11 @@ void function spawnDroppodGrunts( SmokeEvent smokeEvent, SpawnEvent spawnEvent, 
 		entity weapon = guy.GetActiveWeapon()
 		if ( IsValid( weapon ) )
 			weapon.MakeInvisible()
-		
+
 		spawnedNPCs.append( guy )
 		guys.append( guy )
 	}
-	
+
 	waitthread LaunchAnimDropPod( pod, "pod_testpath", spawnEvent.origin, < 0, RandomIntRange( 0, 359 ), 0 > )
 	ActivateFireteamDropPod( pod, guys )
 	foreach( npc in guys )
@@ -1301,17 +1301,17 @@ void function spawnDroppodGrunts( SmokeEvent smokeEvent, SpawnEvent spawnEvent, 
 //works just fine if we simply use it here, there's no viable way to add the Grunts into the enemy count pool, plus that function also only works at
 //specific nodes found in the maps, that is not needed here, full control over the coordinates where the dropship will drop grunts is better.
 void function spawnGruntDropship( SmokeEvent smokeEvent, SpawnEvent spawnEvent, FlowControlEvent flowControlEvent, SoundEvent soundEvent )
-{ 
+{
 	printt( "Spawning Grunt Dropship at: " + spawnEvent.origin )
 	string squadName = MakeSquadName( TEAM_IMC, UniqueString() )
 	string at_weapon = GetConVarString( "ns_fd_grunt_at_weapon" )
-	
+
 	vector origin 		= spawnEvent.origin
 	origin.z 		   += 640 //Expected to people make coordinates in the ground so we add this up for the hover height
 	float yaw 			= spawnEvent.angles.y
 	int health 			= 10000
 	int shield 			= 5000
-	
+
 	CallinData drop
 	InitCallinData( drop )
 	SetCallinStyle( drop, eDropStyle.ZIPLINE_NPC )
@@ -1320,7 +1320,7 @@ void function spawnGruntDropship( SmokeEvent smokeEvent, SpawnEvent spawnEvent, 
 	drop.yaw 			= yaw
 	drop.team 			= TEAM_IMC
 	drop.squadname 		= squadName
-	
+
 	FlightPath flightPath
 	flightPath = GetAnalysisForModel( DROPSHIP_MODEL, DROPSHIP_DROP_ANIM )
 	entity ref = CreateScriptRef()
@@ -1332,7 +1332,7 @@ void function spawnGruntDropship( SmokeEvent smokeEvent, SpawnEvent spawnEvent, 
 	DropTable dropTable
 	dropTable.nodes = DropshipFindDropNodes( flightPath, origin, yaw, "both", true, IsLegalFlightPath_OverTime )
 	dropTable.valid = true
-	
+
 	asset model = GetFlightPathModel( "fp_crow_model" )
 	waitthread WarpinEffect( model, DROPSHIP_DROP_ANIM, ref.GetOrigin(), ref.GetAngles() )
 	entity dropship = CreateDropship( TEAM_IMC, ref.GetOrigin(), ref.GetAngles() )
@@ -1364,7 +1364,7 @@ void function spawnGruntDropship( SmokeEvent smokeEvent, SpawnEvent spawnEvent, 
 				dropship.Destroy()
 		}
 	)
-	
+
 	array<entity> guys
 	for ( int i = 0; i < spawnEvent.spawnAmount; i++ )
     {
@@ -1390,19 +1390,19 @@ void function spawnGruntDropship( SmokeEvent smokeEvent, SpawnEvent spawnEvent, 
 		DispatchSpawn( guy )
 		SetupGruntBehaviorFlags( guy )
 		SetSquad( guy, squadName )
-		
+
 		if ( i < GetCurrentPlaylistVarInt( "fd_grunt_at_weapon_users", 0 ) )
 			guy.GiveWeapon( at_weapon )
-		
+
 		SetTargetName( guy, GetTargetNameForID( eFD_AITypeIDs.GRUNT ) )
 		AddMinimapForHumans( guy )
 		spawnedNPCs.append( guy )
 		guys.append( guy )
-		
+
 		table Table = CreateDropshipAnimTable( dropship, "both", i )
 		thread GuyDeploysOffShip( guy, Table )
 	}
-	
+
 	EmitSoundOnEntity( dropship, dropshipSound )
 	thread PlayAnimTeleport( dropship, DROPSHIP_DROP_ANIM, ref, 0 )
 	ArrayRemoveDead( guys )
@@ -1486,7 +1486,7 @@ void function spawnDroppodStalker( SmokeEvent smokeEvent, SpawnEvent spawnEvent,
 			unreachable
 
 	}
-	
+
 	if( GetMapName().find( "mp_lf_" ) != null )
 	{
 		foreach( npc in guys )
@@ -1496,7 +1496,7 @@ void function spawnDroppodStalker( SmokeEvent smokeEvent, SpawnEvent spawnEvent,
 			npc.SetActiveWeaponByName( "mp_weapon_epg" )
 			npc.DisableNPCFlag( NPC_DISABLE_SENSING | NPC_IGNORE_ALL )
 			npc.EnableNPCFlag( NPC_NO_WEAPON_DROP )
-			
+
 			entity weapon = npc.GetActiveWeapon()
 			if ( IsValid( weapon ) )
 				weapon.MakeInvisible()
@@ -1553,14 +1553,14 @@ void function spawnDroppodSpectreMortar( SmokeEvent smokeEvent, SpawnEvent spawn
 
 	waitthread LaunchAnimDropPod( pod, "pod_testpath", spawnEvent.origin, < 0, RandomIntRange( 0, 359 ), 0 > )
     ActivateFireteamDropPod( pod, guys )
-	
+
 	foreach( npc in guys )
 	{
 		AddMinimapForHumans( npc )
 		npc.SetEfficientMode( false )
 		thread NPCStuckTracker( npc )
 	}
-	
+
 	thread MortarSpectreSquadThink( guys, fd_harvester.harvester )
 }
 
@@ -1603,7 +1603,7 @@ void function spawnDroppodSpectre( SmokeEvent smokeEvent, SpawnEvent spawnEvent,
 
 	waitthread LaunchAnimDropPod( pod, "pod_testpath", spawnEvent.origin, < 0, RandomIntRange( 0, 359 ), 0 > )
     ActivateFireteamDropPod( pod, guys )
-	
+
 	foreach( npc in guys )
 	{
 		AddMinimapForHumans( npc )
@@ -1712,7 +1712,7 @@ void function SpawnScorchTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, Fl
 		npc.kv.WeaponProficiency = eWeaponProficiency.AVERAGE
 		SlowEnemyMovementBasedOnDifficulty( npc )
 	}
-	
+
 	SetTargetName( npc, GetTargetNameForID( spawnEvent.spawnType ) ) // required for client to create icons
 	DispatchSpawn( npc )
 	if ( spawnEvent.titanType == 1 && elitesAllowed )
@@ -1721,7 +1721,7 @@ void function SpawnScorchTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, Fl
 		npc.SetMaxHealth( npc.GetMaxHealth() + 7500 )
 		npc.SetHealth( npc.GetMaxHealth() )
 		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_scorch_prime"
-		
+
 		array<entity> primaryWeapons = npc.GetMainWeapons()
 		entity weapon = primaryWeapons[0]
 		weapon.AddMod( "fd_wpn_upgrade_2" )
@@ -1758,7 +1758,7 @@ void function SpawnRoninTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, Flo
 			SetSpawnOption_AISettings( npc, "npc_titan_stryder_leadwall" )
 		else
 			SetSpawnOption_AISettings( npc, "npc_titan_stryder_leadwall_boss_fd" )
-		
+
 		npc.kv.AccuracyMultiplier = 0.7
 		npc.kv.WeaponProficiency = eWeaponProficiency.AVERAGE
 	}
@@ -1770,7 +1770,7 @@ void function SpawnRoninTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, Flo
 		npc.SetMaxHealth( npc.GetMaxHealth() + 7500 )
 		npc.SetHealth( npc.GetMaxHealth() )
 		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_ronin"
-		
+
 		npc.GetOffhandWeapon( OFFHAND_MELEE ).AddMod( "fd_sword_upgrade" )
 	}
 	if( spawnEvent.entityGlobalKey != "" )
@@ -1816,7 +1816,7 @@ void function SpawnToneTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, Flow
 		npc.SetMaxHealth( npc.GetMaxHealth() + 7500 )
 		npc.SetHealth( npc.GetMaxHealth() )
 		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_tone"
-		
+
 		entity tonesonar = npc.GetOffhandWeapon( OFFHAND_ANTIRODEO )
 		tonesonar.AddMod( "fd_sonar_duration" )
 		tonesonar.AddMod( "fd_sonar_damage_amp" )
@@ -1863,14 +1863,14 @@ void function SpawnLegionTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, Fl
 		npc.SetHealth( npc.GetMaxHealth() )
 		npc.kv.AccuracyMultiplier = 10.0 //Elite Legions don't ever use their cores, but this shall compensate passively, considering the gun's spread
 		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_legion"
-		
+
 		array<entity> primaryWeapons = npc.GetMainWeapons()
 		entity maingun = primaryWeapons[0]
 		maingun.AddMod( "fd_closerange_helper" )
 		maingun.AddMod( "fd_longrange_helper" )
 		maingun.AddMod( "fd_piercing_shots" )
 		maingun.AddMod( "SiegeMode" )
-		
+
 		entity gunshield = npc.GetOffhandWeapon( OFFHAND_SPECIAL )
 		gunshield.AddMod( "npc_more_shield" )
 		gunshield.AddMod( "npc_infinite_shield" )
@@ -1916,14 +1916,14 @@ void function SpawnMonarchTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, F
 		npc.SetMaxHealth( npc.GetMaxHealth() + 7500 )
 		npc.SetHealth( npc.GetMaxHealth() )
 		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_vanguard"
-		
+
 		array<entity> primaryWeapons = npc.GetMainWeapons()
 		entity maingun = primaryWeapons[0]
 		maingun.AddMod( "arc_rounds" )
 		maingun.AddMod( "rapid_reload" )
 		maingun.AddMod( "fd_vanguard_weapon_1" )
 		maingun.AddMod( "fd_vanguard_weapon_2" )
-		
+
 		npc.TakeOffhandWeapon( OFFHAND_ORDNANCE )
 		npc.GiveOffhandWeapon( "mp_titanweapon_shoulder_rockets", OFFHAND_ORDNANCE, ["mod_ordnance_core","upgradeCore_MissileRack_Vanguard"] )
 	}
@@ -2021,7 +2021,7 @@ void function spawnSniperTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent, Fl
 		npc.SetMaxHealth( npc.GetMaxHealth() + 7500 )
 		npc.SetHealth( npc.GetMaxHealth() )
 		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_northstar"
-		
+
 		entity tethertrap = npc.GetOffhandWeapon( OFFHAND_SPECIAL )
 		tethertrap.AddMod( "fd_explosive_trap" )
 		tethertrap.AddMod( "fd_trap_charges" )
@@ -2069,7 +2069,7 @@ void function SpawnToneSniperTitan( SmokeEvent smokeEvent, SpawnEvent spawnEvent
 		npc.SetMaxHealth( npc.GetMaxHealth() + 7500 )
 		npc.SetHealth( npc.GetMaxHealth() )
 		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_tone_prime"
-		
+
 		entity tonesonar = npc.GetOffhandWeapon( OFFHAND_ANTIRODEO )
 		tonesonar.AddMod( "fd_sonar_duration" )
 		tonesonar.AddMod( "fd_sonar_damage_amp" )
@@ -2141,7 +2141,7 @@ void function SpawnTick( SmokeEvent smokeEvent, SpawnEvent spawnEvent, FlowContr
 		guy.AssaultSetFightRadius( expect int( guy.Dev_GetAISettingByKeyField( "LookDistDefault_Combat" ) ) ) // make the ticks target players very aggressively
 		guys.append( guy )
 	}
-	
+
 	waitthread LaunchAnimDropPod( pod, "pod_testpath", spawnEvent.origin, < 0, RandomIntRange( 0, 359 ), 0 > )
 	ActivateFireteamDropPod( pod, guys )
 	foreach( guy in guys )
@@ -2177,7 +2177,7 @@ void function PingMinimap( float x, float y, float duration, float spreadRadius,
 }
 
 void function waitUntilLessThanAmountAlive( int amount )
-{	
+{
 	int deduct = 0
 	foreach ( entity npc in spawnedNPCs )
 	{
@@ -2221,7 +2221,7 @@ void function waitUntilLessThanAmountAlive( int amount )
 			}
 		}
 		aliveNPCs = spawnedNPCs.len() - deduct
-		
+
 		if( !IsHarvesterAlive( fd_harvester.harvester ) )
 			return
 	}
@@ -2282,7 +2282,7 @@ void function waitForDeathOfTitans( int amount )
 			}
 		}
 		aliveNPCs = spawnedNPCs.len() - deduct
-		
+
 		if( !IsHarvesterAlive( fd_harvester.harvester ) )
 			return
 	}
@@ -2293,16 +2293,16 @@ void function waitUntilLessThanAmountAliveWeighted( int amount, int humanWeight 
 
 	int aliveNPCsWeighted = 0;
 	foreach( npc in spawnedNPCs )
-	{	
+	{
 		if( !IsValid( npc ) )
 			continue
 
 		if( IsValid( GetPetTitanOwner( npc ) ) )
 			continue
-		
+
 		if( npc.GetTeam() == TEAM_MILITIA )
 			continue
-		
+
 		if( npc.IsTitan() )
 			aliveNPCsWeighted += titanWeight
 		else if( npc.GetTargetName() == "reaper" )
@@ -2315,16 +2315,16 @@ void function waitUntilLessThanAmountAliveWeighted( int amount, int humanWeight 
 		WaitFrame()
 			aliveNPCsWeighted = 0;
 			foreach( npc in spawnedNPCs )
-			{	
+			{
 				if( !IsValid( npc ) )
 					continue
-				
+
 				if( IsValid( GetPetTitanOwner( npc ) ) )
 					continue
-				
+
 				if( npc.GetTeam() == TEAM_MILITIA )
 					continue
-				
+
 				if( npc.IsTitan() )
 					aliveNPCsWeighted += titanWeight
 				else if( npc.GetTargetName() == "reaper" )
@@ -2368,7 +2368,7 @@ void function SlowEnemyMovementBasedOnDifficulty( entity npc )
 {
 	//This is not exact vanilla behavior i think, but enemies definetely moves slower on Frontier Defense than player autotitans
 	Assert( IsValid( npc ) && npc.IsNPC(), "Tried to set up movespeed scale in non-NPC entity: " + npc )
-	
+
 	switch ( difficultyLevel )
 	{
 		case eFDDifficultyLevel.EASY:
@@ -2386,7 +2386,7 @@ void function SlowEnemyMovementBasedOnDifficulty( entity npc )
 void function SetupGruntBehaviorFlags( entity npc )
 {
 	Assert( IsValid( npc ) && IsGrunt( npc ), "Entity is not a Grunt: " + npc )
-	
+
 	switch ( difficultyLevel )
 	{
 		case eFDDifficultyLevel.EASY:
@@ -2406,7 +2406,8 @@ void function SetupGruntBehaviorFlags( entity npc )
 void function GruntTargetsTitan( entity npc )
 {
 	Assert( IsValid( npc ) && IsGrunt( npc ), "Entity is not a Grunt: " + npc )
-	
+	OnEnemyChanged_TryHeavyArmorWeapon( npc )
+	OnEnemyChanged_MinionUpdateAimSettingsForEnemy( npc )
 	entity enemy = npc.GetEnemy()
 	if( enemy != null )
 	{
@@ -2432,7 +2433,7 @@ void function SetTitanAsElite( entity npc )
 {
 	if( GetGameState() != eGameState.Playing || !IsHarvesterAlive( fd_harvester.harvester ) )
 		return
-	
+
 	Assert( IsValid( npc ) && npc.IsTitan(), "Entity is not a Titan to set as Elite: " + npc )
 	if ( npc.IsTitan() && elitesAllowed )
 	{
@@ -2452,7 +2453,7 @@ void function SetEliteTitanPostSpawn( entity npc )
 {
 	if( GetGameState() != eGameState.Playing || !IsHarvesterAlive( fd_harvester.harvester ) )
 		return
-	
+
 	Assert( IsValid( npc ) && npc.IsTitan(), "Entity is not a Titan to set as Elite: " + npc )
 	if ( npc.IsTitan() && elitesAllowed )
 	{
@@ -2464,7 +2465,7 @@ void function SetEliteTitanPostSpawn( entity npc )
 		SetTitanWeaponSkin( npc )
 		HideCrit( npc )
 		ShowName( npc )
-		
+
 		entity soul = npc.GetTitanSoul()
 		if( IsValid( soul ) )
 		{
@@ -2478,10 +2479,10 @@ void function SetEliteTitanPostSpawn( entity npc )
 void function MonitorEliteTitanCore( entity npc )
 {
 	wait 6
-	
+
 	if( GetGameState() != eGameState.Playing || !IsHarvesterAlive( fd_harvester.harvester ) )
 		return
-	
+
 	AddCreditToTitanCoreBuilder( npc, 1.0 )
 	GiveOffhandElectricSmoke( npc )
 	entity soul = npc.GetTitanSoul()
@@ -2500,10 +2501,10 @@ void function WinWave()
 /* Extra Content
 ███████╗██╗  ██╗████████╗██████╗  █████╗      ██████╗ ██████╗ ███╗   ██╗████████╗███████╗███╗   ██╗████████╗
 ██╔════╝╚██╗██╔╝╚══██╔══╝██╔══██╗██╔══██╗    ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝██╔════╝████╗  ██║╚══██╔══╝
-█████╗   ╚███╔╝    ██║   ██████╔╝███████║    ██║     ██║   ██║██╔██╗ ██║   ██║   █████╗  ██╔██╗ ██║   ██║   
-██╔══╝   ██╔██╗    ██║   ██╔══██╗██╔══██║    ██║     ██║   ██║██║╚██╗██║   ██║   ██╔══╝  ██║╚██╗██║   ██║   
-███████╗██╔╝ ██╗   ██║   ██║  ██║██║  ██║    ╚██████╗╚██████╔╝██║ ╚████║   ██║   ███████╗██║ ╚████║   ██║   
-╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝     ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═══╝   ╚═╝   
+█████╗   ╚███╔╝    ██║   ██████╔╝███████║    ██║     ██║   ██║██╔██╗ ██║   ██║   █████╗  ██╔██╗ ██║   ██║
+██╔══╝   ██╔██╗    ██║   ██╔══██╗██╔══██║    ██║     ██║   ██║██║╚██╗██║   ██║   ██╔══╝  ██║╚██╗██║   ██║
+███████╗██╔╝ ██╗   ██║   ██║  ██║██║  ██║    ╚██████╗╚██████╔╝██║ ╚████║   ██║   ███████╗██║ ╚████║   ██║
+╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝     ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═══╝   ╚═╝
 */
 
 void function Drop_Spawnpoint( vector origin, int team, float impactTime )
@@ -2516,9 +2517,9 @@ void function Drop_Spawnpoint( vector origin, int team, float impactTime )
 	SetTeam( effectEnemy, team )
 	EffectSetControlPointVector( effectEnemy, 1, < 255, 64, 16 > )
 	effectEnemy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
-	
+
 	wait impactTime
-	
+
 	EffectStop( effectEnemy )
 }
 
@@ -2548,7 +2549,7 @@ vector function GetSkyCeiling( vector point )
 void function SetTitanWeaponSkin( entity npc, int skinindex = 1, int camoindex = 31 )
 {
 	Assert( IsValid( npc ) && npc.IsTitan(), "Entity is not a Titan to set as Elite: " + npc )
-	
+
 	if ( npc.IsTitan() )
 	{
 		array<entity> primaryWeapons = npc.GetMainWeapons()
@@ -2643,14 +2644,14 @@ void function SpawnFDHeavyTurret( vector spawnpos, vector angles, vector ornull 
 	HeavyTurret.kv.reactChance = 100
 	HeavyTurret.kv.WeaponProficiency = eWeaponProficiency.PERFECT
 	HeavyTurret.SetNoTarget( false )
-	
+
 	if ( battportpos != null && battportangles != null )
 	{
 		entity TurretBatteryPort = CreatePropScript( $"models/props/battery_port/battery_port_animated.mdl", expect vector( battportpos ) + < 0, 0, 12 >, battportangles, 6 )
 		entity TurretBatteryPortBase = CreatePropDynamicLightweight( $"models/props/turret_base/turret_base.mdl", battportpos, battportangles, 6 )
 		HT_BatteryPort( TurretBatteryPort, HeavyTurret )
 	}
-	
+
 	else
 	{
 		NPC_NoTarget( HeavyTurret )
@@ -2686,14 +2687,14 @@ void function SpawnLFMapTitan_Threaded( vector spawnpos, vector angles )
 	npc.TakeOffhandWeapon( OFFHAND_ORDNANCE )
 	npc.TakeOffhandWeapon( OFFHAND_SPECIAL )
 	npc.TakeOffhandWeapon( OFFHAND_ANTIRODEO )
-	
+
 	npc.GiveWeapon( "mp_titanweapon_xo16_vanguard", ["arc_rounds","rapid_reload","fd_vanguard_weapon_1","fd_vanguard_weapon_2"] )
 	npc.GiveOffhandWeapon( "mp_titanweapon_dumbfire_rockets", OFFHAND_SPECIAL )
 	npc.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", OFFHAND_ORDNANCE )
 	npc.GiveOffhandWeapon( "mp_titanability_laser_trip", OFFHAND_ANTIRODEO, ["pas_ion_tripwire"] )
-	
+
 	SetTitanWeaponSkin( npc )
-	
+
 	npc.WaitSignal( "TitanHotDropComplete" )
 	thread TitanKneel( npc )
 }
@@ -2732,7 +2733,7 @@ void function MonitorPublicTitan( entity titan )
 void function SetRespawnOfHelperTitan()
 {
 	svGlobal.levelEnt.EndSignal( "CleanUpEntitiesForRoundEnd" ) //Stop respawn because it gonna respawn through the wave restart code itself
-	
+
 	wait 120
 	if( GetGameState() == eGameState.Playing )
 		thread SpawnLFMapTitan( file.helperTitanSpawnPos, file.helperTitanAngles )
@@ -2742,10 +2743,10 @@ void function OnNearbyLFTitan( entity trig, entity activator )
 {
 	if( !IsValidPlayer( activator ) )
 		return
-	
+
 	if( activator.GetTeam() != TEAM_MILITIA || activator.IsTitan() )
 		return
-	
+
 	entity titan = trig.GetParent()
 	entity soul = titan.GetTitanSoul()
 	if( !titan.IsPlayer() && !IsValid( GetPetTitanOwner( titan ) ) && Distance2D( activator.GetOrigin(), titan.GetOrigin() ) > 191 )
@@ -2759,10 +2760,10 @@ void function OnAwayFromLFTitan( entity trig, entity activator )
 {
 	if( !IsValidPlayer( activator ) )
 		return
-	
+
 	if( activator.GetTeam() != TEAM_MILITIA || activator.IsTitan() )
 		return
-	
+
 	entity titan = trig.GetParent()
 	entity soul = titan.GetTitanSoul()
 	if( !titan.IsPlayer() && Distance2D( titan.GetOrigin(), activator.GetOrigin() ) > 192 )
@@ -2827,19 +2828,19 @@ void function LFTitanShieldAndHealthRegenThink( entity soul )
 			shieldRegenRate = shieldRegenRate * frameTime / SHIELD_REGEN_TICK_TIME
 			soul.SetShieldHealth( minint( soul.GetShieldHealthMax(), int( shieldHealth + shieldRegenRate ) ) )
 		}
-		
+
 		if( IsAlive( titan ) && titan.GetHealth() <= titan.GetMaxHealth() )
 		{
 			fullhp = false
 			titan.SetHealth( min( titan.GetMaxHealth(), titan.GetHealth() + 10 ) )
 		}
-		
+
 		if( IsAlive( titan ) && titan.GetHealth() >= ( titan.GetMaxHealth() - 10 ) && !soul.IsDoomed() && !fullhp )
 		{
 			fullhp = true
 			UndoomTitan_Body( titan )
 		}
-		
+
 		lastShieldHealth = shieldHealth
 		lastTime = Time()
 		titan.SetTitle( "Helper Titan" )

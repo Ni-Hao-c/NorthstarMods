@@ -4,7 +4,6 @@ Selector Common
 	SelectSchedule_Flinch
 	SelectSchedule_DisplaceFromDangerousArea
 	SelectSchedule_ReactJumpedOver
-	SelectSchedule_SwitchWeapon
 	SelectSchedule_ReactCloak
 	SelectSchedule_ReactSurprised
 	SelectSchedule_ReactBullet
@@ -35,7 +34,6 @@ Selector Combat
 	SelectSchedule_AntiMassiveEnemy
 
 	SelectSchedule_MeleeAttack
-	SelectSchedule_SwitchWeapon
 	CAI_Combatant::SelectSchedule_ShootingCover
 	SelectSchedule_ChaseEnemy
 

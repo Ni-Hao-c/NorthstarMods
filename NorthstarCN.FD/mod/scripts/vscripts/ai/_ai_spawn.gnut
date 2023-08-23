@@ -284,14 +284,14 @@ entity function CreateProwler( int team, vector origin, vector angles )
 entity function CreateRocketDroneGrunt( int team, vector origin, vector angles )
 {
 	entity npc = CreateNPC( "npc_soldier", team, origin, angles )
-	SetSpawnOption_AISettings( npc, "npc_soldier_pve_specialist" )
+	SetSpawnOption_AISettings( npc, "npc_soldier_drone_summoner_rocket" )
 	return npc
 }
 
 entity function CreateShieldDroneGrunt( int team, vector origin, vector angles )
 {
 	entity npc = CreateNPC( "npc_soldier", team, origin, angles )
-	SetSpawnOption_AISettings( npc, "npc_soldier_sidearm" )
+	SetSpawnOption_AISettings( npc, "npc_soldier_drone_summoner" )
 	return npc
 }
 

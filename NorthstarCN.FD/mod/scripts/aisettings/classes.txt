@@ -155,6 +155,4 @@ classes
 	import npc_titan_ogre_minigun_boss_fd_elite.txt
 	import npc_titan_stryder_leadwall_boss_fd_elite.txt
 	import npc_titan_stryder_sniper_boss_fd_elite.txt
-
-	import npc_soldier_drone_summoner_rocket.txt
 }

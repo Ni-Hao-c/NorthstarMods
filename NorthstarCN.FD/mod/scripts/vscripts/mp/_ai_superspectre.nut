@@ -399,9 +399,9 @@ void function ReaperMinionLauncherThink( entity reaper )
 		if ( Distance( reaper.GetOrigin(), launchPos.origin ) > 96 )
 		{
 			printt( reaper," ASSAULT:", launchPos.origin, Distance( reaper.GetOrigin(), launchPos.origin ) )
-			reaper.AssaultPoint( launchPos.origin )
+			//reaper.AssaultPoint( launchPos.origin )
 			table signalData = WaitSignal( reaper, "OnFinishedAssault", "OnEnterGoalRadius", "OnFailedToPath" )
-			printt( reaper," END ASSAULT:", launchPos.origin, signalData.signal )
+			//printt( reaper," END ASSAULT:", launchPos.origin, signalData.signal )
 			if ( signalData.signal == "OnFailedToPath" )
 				continue
 		}

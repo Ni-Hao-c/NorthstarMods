@@ -247,7 +247,7 @@ void function initFrontierDefenseData()
 	wave2.append(CreateWaitForTimeEvent( 0.6, index++ ) )
 	wave2.append(CreateWaitUntilAliveEvent( 16, index++ ) )
 
-	wave2.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93,-02.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
+	wave2.append(CreateSpawnDroneEvent(	< 2999.95 ,-3092.93, -2.768  >,< 0 , -90 , 0 >,"rightDrone",index++)) 	//右路路远 rightDrone
 	wave2.append(CreateSpawnDroneEvent(	< 2548.79  ,-4935.57 , 332.293 >,< 0 , -90 , 0 >,"closeDrone2",index++)) //右路路远closeDrone2
 	wave2.append(CreateWaitUntilAliveEvent( 16, index++ ) )
 	wave2.append(CreateSuperSpectreEvent(< 3598 , -1424 , -388 >,< 0 , 180 , 0 >,"",index++))

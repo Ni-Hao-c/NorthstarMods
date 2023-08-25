@@ -1,0 +1,20 @@
+globalize_all_functions
+
+// whether the server is a modded, northstar server
+bool function IsNorthstarServer()
+{
+	return GetConVarBool( "ns_is_modded_server" )
+}
+
+// whether the game should return to the lobby on GameRules_EndMatch()
+bool function ShouldReturnToLobby()
+{	
+	return GetConVarBool( "ns_should_return_to_lobby" )
+}
+
+// whether the game should send other clients back to lobby on GameRules_EndMatch()
+// requires loading "sh_northstar_matchmaker.gnut"
+bool function ShouldSendClientsBackToLobby()
+{	
+	return GetConVarBool( "ns_send_clients_back_to_lobby_after_match" )
+}

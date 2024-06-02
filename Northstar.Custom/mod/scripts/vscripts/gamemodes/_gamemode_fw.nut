@@ -13,6 +13,14 @@ global function FW_ReplaceMegaTurret
 global function FW_IsPlayerInFriendlyTerritory
 global function FW_IsPlayerInEnemyTerritory
 
+global function AddCallback_RegisterCustomFWContent
+
+global function AddFWCustomProp
+global function AddFWCustomShipStart
+
+
+global bool useCustomFWLoad
+
 // you need to deal this much damage to trigger "FortWarTowerDamage" score event
 const int FW_HARVESTER_DAMAGE_SEGMENT = 1500
 
@@ -43,6 +51,8 @@ const float FW_TURRET_DAMAGED_DEBOUNCE = 2.0
 
 global HarvesterStruct& fw_harvesterMlt
 global HarvesterStruct& fw_harvesterImc
+
+typedef LoadCustomFWContent void functionref()
 
 // these are not using respawn's remaining code( sh_gamemode_fw.nut )!
 
@@ -110,6 +120,11 @@ struct
 
 	table<int, CampSpawnStruct> fwNpcLevel // basically use to powerup certian camp, sync with alertLevel
 	table< string, table< string, int > > trackedCampNPCSpawns
+
+	array<LoadCustomFWContent> CustomFWContent
+
+
+
 }file
 
 void function GamemodeFW_Init()
@@ -227,6 +242,34 @@ void function HACK_ForceDestroyNPCs_Threaded()
 ////////////////////////////////
 ///// SPAWNPOINT FUNCTIONS /////
 ////////////////////////////////
+
+
+void function AddCallback_RegisterCustomFWontent( LoadCustomFWContent callback )
+{
+	file.CustomFWContent.append( callback )
+}
+
+void function AddFWCustomProp( asset modelasset, vector origin, vector angles )
+{
+	entity prop = CreatePropScript( modelasset, origin, angles, 6 )
+	ToggleNPCPathsForEntity( prop, false )
+	//SetTeam( prop, TEAM_DAMAGE_ALL )
+	prop.Solid()
+	prop.SetAIObstacle( true )
+	prop.SetTakeDamageType( DAMAGE_NO )
+	prop.SetScriptPropFlags( SPF_BLOCKS_AI_NAVIGATION | PROP_IS_VALID_FOR_TURRET_PLACEMENT )
+	prop.AllowMantle()
+}
+
+void function AddFWCustomShipStart( vector origin, vector angles, int team )
+{
+	entity shipspawn = CreateEntity( "info_spawnpoint_dropship_start" )
+	shipspawn.SetOrigin( origin )
+	shipspawn.SetAngles( angles )
+	SetTeam( shipspawn, team )
+	DispatchSpawn( shipspawn )
+}
+
 
 void function RateSpawnpointsPilot_FW( int checkClass, array<entity> spawnpoints, int team, entity player )
 {
@@ -544,7 +587,66 @@ bool function TryFWTerritoryDialogue( entity territory, entity player )
 
 void function LoadEntities()
 {
+		
+
 	// info_target
+	if(useCustomFDLoad)
+	{
+		foreach ( entity trigger_multiple in GetEntArrayByClass_Expensive( "trigger_multiple" ) )
+		{
+			if( trigger_multiple.HasKey( "editorclass" ) )
+			{
+				switch( trigger_multiple.kv.editorclass )
+				{
+					trigger_multiple.Destroy()
+					break
+				}
+			}
+		}
+		foreach ( entity script_ref in GetEntArrayByClass_Expensive( "script_ref" ) )
+	{
+		if( script_ref.HasKey( "editorclass" ) )
+		{
+			switch( script_ref.kv.editorclass )
+			{
+				case "info_fw_foundation_plate":
+					script_ref.Destroy()
+					break
+				case "info_fw_battery_port":
+					script_ref.Destroy()
+					break
+			}
+		}
+	}
+		foreach ( entity info_target in GetEntArrayByClass_Expensive( "info_target" ) )
+	{
+		if( info_target.HasKey( "editorclass" ) )
+		{
+			switch( info_target.kv.editorclass )
+			{
+				case "info_fw_team_tower":
+					info_target.Destroy()
+					break
+				case "info_fw_camp":
+					info_target.Destroy()
+				case "info_fw_turret_site":
+					info_target.Destroy()
+					break
+			}
+		}
+	}
+	}
+
+
+	foreach ( callback in file.CustomFWContent )
+		callback()
+
+
+	
+	
+
+
+	
 	foreach ( entity info_target in GetEntArrayByClass_Expensive( "info_target" ) )
 	{
 		if( info_target.HasKey( "editorclass" ) )
@@ -647,6 +749,7 @@ void function LoadEntities()
 			}
 		}
 	}
+
 
 	// maybe for tick_spawning reapers?
 	ValidateAndFinalizePendingStationaryPositions()

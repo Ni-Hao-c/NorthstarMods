@@ -590,7 +590,7 @@ void function LoadEntities()
 		
 
 	// info_target
-	if(useCustomFDLoad)
+	if(useCustomFWLoad)
 	{
 		foreach ( entity trigger_multiple in GetEntArrayByClass_Expensive( "trigger_multiple" ) )
 		{
@@ -1497,6 +1497,7 @@ void function OnFWTurretSpawned( entity turret )
 	turret.EnableTurret() // always enabled
 	SetDefaultMPEnemyHighlight( turret ) // for sonar highlights to work
 	AddEntityCallback_OnDamaged( turret, OnMegaTurretDamaged )
+	thread TurretBubbleShieldThink(turret)
 	thread FWTurretHighlightThink( turret )
 }
 
@@ -2465,3 +2466,43 @@ string function GetTeamAliveTurretCount_ReturnString( int team )
 /////////////////////////////////////
 ///// BatteryPort Functions End /////
 /////////////////////////////////////
+TurretBubbleShieldThink(entity turret)
+{
+	turret.EndSignal( "OnDestroy" )
+	turret.EndSignal("OnDeath" )
+
+	OnThreadEnd(
+		function () : ( )
+		{
+			
+		}
+	)
+	while(true)
+	{
+	entity BubbleShield = CreateBubbleShieldWithSettings(turret.GetTeam(),turret.GetOrigin(),turret.GetAngles())
+	turret.WaitSignal( "OnPrimaryAttack" )
+	BubbleShield.Destroy()
+	BubbleShieldByAttackthink(turret)
+	}
+}
+
+BubbleShieldByAttackthink(turret)
+{
+	while(true)
+	{
+	
+	
+
+	while ( IsValid( turret ) )
+	{
+		result = turret.WaitSignal( "OnPrimaryAttack" )
+
+		if ( !IsValid( result.activator ) )
+			continue
+		if ( !result.activator.IsTitan() )
+			continue
+		if ( ( result.activator.IsPlayer() ) || ( IsPetTitan( result.activator ) ) )
+			break
+	}
+	}
+}

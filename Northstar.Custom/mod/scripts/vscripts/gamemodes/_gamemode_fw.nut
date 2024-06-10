@@ -14,6 +14,7 @@ global function FW_IsPlayerInFriendlyTerritory
 global function FW_IsPlayerInEnemyTerritory
 
 global function AddCallback_RegisterCustomFWContent
+              
 
 global function AddFWCustomProp
 global function AddFWCustomShipStart
@@ -49,10 +50,17 @@ const int FW_CAMP_IGNORE_NEEDED = 2
 const float FW_HARVESTER_DAMAGED_DEBOUNCE = 5.0
 const float FW_TURRET_DAMAGED_DEBOUNCE = 2.0
 
+global array<string> spawnedMltNPCs
+global array<origin> spawnedMltNPCsWZ
+global array<string> spawnedImcNPCs
+global array<origin> spawnedImcNPCsWZ
+
+
 global HarvesterStruct& fw_harvesterMlt
 global HarvesterStruct& fw_harvesterImc
 
 typedef LoadCustomFWContent void functionref()
+typedef LoadCustomFWNPCS bool functionref()
 
 // these are not using respawn's remaining code( sh_gamemode_fw.nut )!
 
@@ -107,10 +115,10 @@ struct
 
 	// respawn already have a FW_TowerData struct! this table is only for score events
 	table< entity, HarvesterDamageStruct > playerDamageHarvester // team, table< player, time >
-    
+
 	// this is for saving territory's connecting time, try not to make faction dialogues play together
 	table< int, float > teamTerrLastConnectTime // team, time
-	
+
 	// unused
 	array<entity> etitaninmlt
 	array<entity> etitaninimc
@@ -122,6 +130,8 @@ struct
 	table< string, table< string, int > > trackedCampNPCSpawns
 
 	array<LoadCustomFWContent> CustomFWContent
+	array<bool functionref( string , vector ) > CustomFWNPCS
+
 
 
 
@@ -244,7 +254,7 @@ void function HACK_ForceDestroyNPCs_Threaded()
 ////////////////////////////////
 
 
-void function AddCallback_RegisterCustomFWontent( LoadCustomFWContent callback )
+void function AddCallback_RegisterCustomFWcontent( LoadCustomFWContent callback )
 {
 	file.CustomFWContent.append( callback )
 }
@@ -342,9 +352,10 @@ void function OnFWGamePlaying()
 	startFWHarvester()
 	FWAreaThreatLevelThink()
 	StartFWCampThink()
+	//StartFWNPCSThink()
 	InitTurretSettings()
 	FWPlayerObjectiveState()
-
+	thread PlayerInEnemyTerritory()
 	HACK_ForceDestroyNPCs()
 }
 
@@ -428,7 +439,7 @@ void function HandleFWPlayerKilledScoreEvent( entity victim, entity attacker )
 	// this function only handles player's kills
 	if( !attacker.IsPlayer() )
 		return
-    
+
 	// suicide don't get scores
 	if( attacker == victim )
 		return
@@ -453,7 +464,7 @@ void function HandleFWPlayerKilledScoreEvent( entity victim, entity attacker )
 	}
 
 	if( victim in file.playerDamageHarvester ) // victim has damaged the harvester this life
-	{    
+	{
 		float damageTime = file.playerDamageHarvester[ victim ].recentDamageTime
 
 		// is victim recently damaged havester?
@@ -587,7 +598,7 @@ bool function TryFWTerritoryDialogue( entity territory, entity player )
 
 void function LoadEntities()
 {
-		
+
 
 	// info_target
 	if(useCustomFWLoad)
@@ -642,11 +653,11 @@ void function LoadEntities()
 		callback()
 
 
-	
-	
 
 
-	
+
+
+
 	foreach ( entity info_target in GetEntArrayByClass_Expensive( "info_target" ) )
 	{
 		if( info_target.HasKey( "editorclass" ) )
@@ -1278,7 +1289,7 @@ Point function FW_ReCalculateTitanReplacementPoint( Point basePoint, entity play
 
 	if ( !IsValid( teamHarvester ) ) // team's havester has been destroyed!
         return basePoint // return given value
-		
+
 	if( Distance2D( basePoint.origin, teamHarvester.GetOrigin() ) <= FW_SPAWNPOINT_SEARCH_RADIUS ) // close enough!
 		return basePoint // this origin is good enough
 
@@ -1296,7 +1307,7 @@ bool function FW_RequestTitanAllowed( entity player, array< string > args )
 		PlayFactionDialogueToPlayer( "tw_territoryNag", player ) // notify player
 		TryPlayTitanfallNegativeSoundToPlayer( player )
 		int objectiveID = 101 // which means "#FW_OBJECTIVE_TITANFALL"
-		Remote_CallFunction_NonReplay( player, "ServerCallback_FW_SetObjective", objectiveID ) 
+		Remote_CallFunction_NonReplay( player, "ServerCallback_FW_SetObjective", objectiveID )
 		return false
 	}
 	return true
@@ -1312,7 +1323,7 @@ bool function TryPlayTitanfallNegativeSoundToPlayer( entity player )
 	// use a sound to notify player they can't titanfall here
 	EmitSoundOnEntityOnlyToPlayer( player, player, "titan_dryfire" )
 	player.s.lastNegativeSound = Time()
-	
+
 	return true
 }
 
@@ -1497,7 +1508,8 @@ void function OnFWTurretSpawned( entity turret )
 	turret.EnableTurret() // always enabled
 	SetDefaultMPEnemyHighlight( turret ) // for sonar highlights to work
 	AddEntityCallback_OnDamaged( turret, OnMegaTurretDamaged )
-	thread TurretBubbleShieldThink(turret)
+	//thread TurretBubbleShieldThink(turret)
+
 	thread FWTurretHighlightThink( turret )
 }
 
@@ -1555,14 +1567,30 @@ const float TURRET_NOTIFICATION_DEBOUNCE = 10.0
 
 void function OnMegaTurretDamaged( entity turret, var damageInfo )
 {
+
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	float damageAmount = DamageInfo_GetDamage( damageInfo )
 	int scriptType = DamageInfo_GetCustomDamageType( damageInfo )
 	int turretTeam = turret.GetTeam()
 
+	//entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	/*On vanilla, because of the glitch of swapping teams, IMC players could attack the Harvester, i am removing this possibility from them	because FD is a
+	PvE	gamemode after all and such should behave accordingly, so what IMC players should do now is actually distract or kill the defending players, assisting
+	the AI in actually reach the Harvester for them to do the damage */
+
+
 	if ( !damageSourceID && !damageAmount && !attacker )
 		return
+
+
+	if ( attacker.IsPlayer())
+	{
+		SendHudMessage( attacker, "You cannot attack the Harvester, only the AI!", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+		DamageInfo_ScaleDamage( damageInfo, 0.0 )
+		return
+	}
 
 	if( turret.GetShieldHealth() - damageAmount <= 0 && scriptType != damageTypes.rodeoBatteryRemoval ) // this shot breaks shield
 	{
@@ -1850,7 +1878,7 @@ void function FW_createHarvester()
 	fw_harvesterImc.harvester.Minimap_SetCustomState( eMinimapObject_prop_script.FD_HARVESTER )
 	AddEntityCallback_OnDamaged( fw_harvesterImc.harvester, OnHarvesterDamaged )
 	AddEntityCallback_OnPostDamaged( fw_harvesterImc.harvester, OnHarvesterPostDamaged )
-	
+
 	// imc havester settings
 	// don't set this, or sonar pulse will try to find it and failed to set highlight
 	//fw_harvesterMlt.harvester.SetScriptName("fw_team_tower")
@@ -1899,7 +1927,7 @@ void function OnHarvesterDamaged( entity harvester, var damageInfo )
 	int friendlyTeam = harvester.GetTeam()
 	int enemyTeam = GetOtherTeam( friendlyTeam )
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-		
+
 	HarvesterStruct harvesterstruct // current harveter's struct
 	if( friendlyTeam == TEAM_MILITIA )
 		harvesterstruct = fw_harvesterMlt
@@ -1920,7 +1948,7 @@ void function OnHarvesterDamaged( entity harvester, var damageInfo )
 	// always reset harvester's recharge delay
 	harvesterstruct.lastDamage = Time()
 
-	
+
 	// done damage adjustments here, since harvester prop's health is setting manually through damageAmount
 	if ( damageSourceID == eDamageSourceId.mp_titancore_laser_cannon )
 		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 50 ) // laser core shreds super well for some reason
@@ -1951,14 +1979,14 @@ void function OnHarvesterDamaged( entity harvester, var damageInfo )
 		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 2 )
 
     if ( damageSourceID == eDamageSourceId.mp_titanweapon_flightcore_rockets ) // flight core shreds well
-        DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 5 ) 
+        DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 5 )
 
     // cluster missle is very effective against non-moving targets
     if ( damageSourceID == eDamageSourceId.mp_titanweapon_dumbfire_rockets ) // cluster missile shreds super well
-        DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 10 ) 
+        DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 10 )
 
     // scorch's thermites is very effective against non-moving targets
-	if ( damageSourceID == eDamageSourceId.mp_titanweapon_heat_shield || 
+	if ( damageSourceID == eDamageSourceId.mp_titanweapon_heat_shield ||
         damageSourceID == eDamageSourceId.mp_titanweapon_meteor_thermite ||
 		damageSourceID == eDamageSourceId.mp_titanweapon_flame_wall ||
 		damageSourceID == eDamageSourceId.mp_titanability_slow_trap ||
@@ -1987,7 +2015,7 @@ void function OnHarvesterPostDamaged( entity harvester, var damageInfo )
 
 	if ( !damageSourceID && !damageAmount && !attacker ) // actually not dealing any damage?
 		return
-	
+
 	// prevent player from sniping the harvester cross-map
 	if ( attacker.IsPlayer() && !FW_IsPlayerInEnemyTerritory( attacker ) )
 	{
@@ -2256,7 +2284,7 @@ void function FWPlayerObjectiveState_Threaded()
 				titanSoul = petTitan.GetTitanSoul()
 
 			if ( IsValid( GetBatteryOnBack( player ) ) )
-				player.SetPlayerNetInt( "gameInfoStatusText", APPLY_BATTERY_TEXT_INDEX ) 
+				player.SetPlayerNetInt( "gameInfoStatusText", APPLY_BATTERY_TEXT_INDEX )
 			else if ( IsTitanAvailable( player ) )
 			{
 				if( !player.s.notifiedTitanfall ) // first notification, also do a objective announcement
@@ -2265,7 +2293,7 @@ void function FWPlayerObjectiveState_Threaded()
 					player.s.notifiedTitanfall = true
 				}
 				else
-					player.SetPlayerNetInt( "gameInfoStatusText", CALL_IN_TITAN_TEXT_INDEX ) 
+					player.SetPlayerNetInt( "gameInfoStatusText", CALL_IN_TITAN_TEXT_INDEX )
 			}
 			else if ( IsValid( petTitan ) )
 				player.SetPlayerNetInt( "gameInfoStatusText", EMBARK_TITAN_TEXT_INDEX )
@@ -2327,7 +2355,7 @@ void function FW_InitBatteryPort( entity batteryPort )
 	batteryPort.s.relatedTurret <- null             // entity, for saving batteryPort's nearest turret
 
 	entity turret = GetNearestMegaTurret( batteryPort ) // consider this is the port's related turret
-	
+
 	bool isBaseTurret = expect bool( turret.s.baseTurret )
 	SetTeam( batteryPort, turret.GetTeam() )
 	batteryPort.s.relatedTurret = turret
@@ -2338,12 +2366,12 @@ void function FW_InitBatteryPort( entity batteryPort )
 		batteryPort.s.hackAvaliable = false
 		batteryPort.SetUsableByGroup( "friendlies pilot" ) // only show hint to friendlies
 	} // it can never be hacked!
-	
+
 	turret.s.relatedBatteryPort = batteryPort // do it here
 }
 
 function FW_IsBatteryPortUsable( batteryPortvar, playervar ) //actually bool function( entity, entity )
-{	
+{
 	entity batteryPort = expect entity( batteryPortvar )
 	entity player = expect entity( playervar )
 	entity turret = expect entity( batteryPort.s.relatedTurret )
@@ -2466,6 +2494,7 @@ string function GetTeamAliveTurretCount_ReturnString( int team )
 /////////////////////////////////////
 ///// BatteryPort Functions End /////
 /////////////////////////////////////
+/*
 TurretBubbleShieldThink(entity turret)
 {
 	turret.EndSignal( "OnDestroy" )
@@ -2474,7 +2503,7 @@ TurretBubbleShieldThink(entity turret)
 	OnThreadEnd(
 		function () : ( )
 		{
-			
+
 		}
 	)
 	while(true)
@@ -2488,10 +2517,19 @@ TurretBubbleShieldThink(entity turret)
 
 BubbleShieldByAttackthink(turret)
 {
+	turret.EndSignal( "OnDestroy" )
+	turret.EndSignal("OnDeath" )
+
+	OnThreadEnd(
+		function () : ( )
+		{
+
+		}
+	)
 	while(true)
 	{
-	
-	
+
+
 
 	while ( IsValid( turret ) )
 	{
@@ -2504,5 +2542,105 @@ BubbleShieldByAttackthink(turret)
 		if ( ( result.activator.IsPlayer() ) || ( IsPetTitan( result.activator ) ) )
 			break
 	}
+	}
+}
+*/
+array<string> SNPCs = ["npc_soldier","npc_spectre","npc_stalker","npc_super_spectre"]
+
+function StartFWNPCSThink()
+{
+	wait 20
+	thread FWnpcsThink()
+}
+
+function FWnpcsThink()
+{
+	 
+	while ( IsAlive( fw_harvesterImc.harvester )  && IsAlive( fw_harvesterMlt.harvester )  )
+	{
+
+	 string	NPC1 = SNPCs.getrandom()
+	 if( spawnedMltNPCs.len() == 0)
+	 {
+		spawnedMltNPCs.insert(0,NPC1)
+	 }
+	 if ( spawnedImcNPCs.len() == 0 )
+	 {
+		spawnedImcNPCs.insert(0,NPC1)
+	 }
+	
+	 thread  spawnedMlt( spawnedMltNPCs[0])
+	 thread  spawnedImc( spawnedImcNPCs[0])
+	
+	 spawnedImcNPCs.remove(0)
+	 spawnedMltNPCs.remove(0)
+
+	}
+}
+
+function spawnedMlt ( string npc)
+{
+	spawnedMltNPCs( npc )
+}
+function spawnedImc( string npc)
+{
+	spawnedImcNPCs( npc )
+}
+
+function spawnedMltNPCs( string npc , vector origin)
+{
+	foreach ( origin in spawnedMltNPCsWZ )
+	{
+		bool A 
+	foreach ( callback in file.CustomFWNPCS )
+		{
+			A  = callback( npc , origin)
+			if (A)
+				break
+		}
+	}
+
+	
+}
+function spawnedImcNPCs( string npc , vector origin )
+{
+	foreach ( origin in spawnedImcNPCsWZ )
+	{
+		bool A 
+	foreach ( callback in file.CustomFWNPCS )
+		{
+			A = callback(  npc , origin )
+			if (A)
+				break
+		}
+	}
+
+	
+}
+
+void function AddCallback_FWNPC( bool functionref( string , vector ) callbackFunc )
+{
+	//Assert( !file.CustomFWNPCS.contains( callbackFunc ), "Already added " + FunctionToString( callbackFunc ) + " with AddCallback_GGEarnMeterFull" )
+
+	file.CustomFWNPCS.append( callbackFunc )
+}
+
+void function PlayerInEnemyTerritory()
+{
+	while(IsAlive( fw_harvesterImc.harvester )  && IsAlive( fw_harvesterMlt.harvester ))
+	{
+	array<entity> allPlayers = GetPlayerArray()
+	foreach (  entity p in allPlayers )
+	{
+		
+		if( IsAlive (p) && FW_IsPlayerInEnemyTerritory(p))
+		{
+			if(p.GetTeam == TEAM_IMC)
+				Explosion_DamageDefSimple( damagedef_fd_tether_trap, p.GetOrigin(),fw_harvesterMlt.harvester, fw_harvesterMlt.harvester, p.GetOrigin() )
+			if(p.GetTeam == TEAM_MILITIA)
+				Explosion_DamageDefSimple( damagedef_fd_tether_trap, p.GetOrigin(),fw_harvesterImc.harvester, fw_harvesterImc.harvester, p.GetOrigin() )
+		}
+	}
+	wait 3
 	}
 }

@@ -14,7 +14,7 @@ global function FW_IsPlayerInFriendlyTerritory
 global function FW_IsPlayerInEnemyTerritory
 
 global function AddCallback_RegisterCustomFWContent
-              
+
 
 global function AddFWCustomProp
 global function AddFWCustomShipStart
@@ -614,7 +614,7 @@ void function LoadEntities()
 				}
 			}
 		}
-		foreach ( entity script_ref in GetEntArrayByClass_Expensive( "script_ref" ) )
+	foreach ( entity script_ref in GetEntArrayByClass_Expensive( "script_ref" ) )
 	{
 		if( script_ref.HasKey( "editorclass" ) )
 		{
@@ -635,9 +635,6 @@ void function LoadEntities()
 		{
 			switch( info_target.kv.editorclass )
 			{
-				case "info_fw_team_tower":
-					info_target.Destroy()
-					break
 				case "info_fw_camp":
 					info_target.Destroy()
 				case "info_fw_turret_site":
@@ -2555,7 +2552,7 @@ function StartFWNPCSThink()
 
 function FWnpcsThink()
 {
-	 
+
 	while ( IsAlive( fw_harvesterImc.harvester )  && IsAlive( fw_harvesterMlt.harvester )  )
 	{
 
@@ -2568,10 +2565,10 @@ function FWnpcsThink()
 	 {
 		spawnedImcNPCs.insert(0,NPC1)
 	 }
-	
+
 	 thread  spawnedMlt( spawnedMltNPCs[0])
 	 thread  spawnedImc( spawnedImcNPCs[0])
-	
+
 	 spawnedImcNPCs.remove(0)
 	 spawnedMltNPCs.remove(0)
 
@@ -2591,7 +2588,7 @@ function spawnedMltNPCs( string npc , vector origin)
 {
 	foreach ( origin in spawnedMltNPCsWZ )
 	{
-		bool A 
+		bool A
 	foreach ( callback in file.CustomFWNPCS )
 		{
 			A  = callback( npc , origin)
@@ -2600,13 +2597,13 @@ function spawnedMltNPCs( string npc , vector origin)
 		}
 	}
 
-	
+
 }
 function spawnedImcNPCs( string npc , vector origin )
 {
 	foreach ( origin in spawnedImcNPCsWZ )
 	{
-		bool A 
+		bool A
 	foreach ( callback in file.CustomFWNPCS )
 		{
 			A = callback(  npc , origin )
@@ -2615,7 +2612,7 @@ function spawnedImcNPCs( string npc , vector origin )
 		}
 	}
 
-	
+
 }
 
 void function AddCallback_FWNPC( bool functionref( string , vector ) callbackFunc )
@@ -2632,13 +2629,12 @@ void function PlayerInEnemyTerritory()
 	array<entity> allPlayers = GetPlayerArray()
 	foreach (  entity p in allPlayers )
 	{
-		
+
+
 		if( IsAlive (p) && FW_IsPlayerInEnemyTerritory(p))
 		{
-			if(p.GetTeam == TEAM_IMC)
-				Explosion_DamageDefSimple( damagedef_fd_tether_trap, p.GetOrigin(),fw_harvesterMlt.harvester, fw_harvesterMlt.harvester, p.GetOrigin() )
-			if(p.GetTeam == TEAM_MILITIA)
-				Explosion_DamageDefSimple( damagedef_fd_tether_trap, p.GetOrigin(),fw_harvesterImc.harvester, fw_harvesterImc.harvester, p.GetOrigin() )
+			entity worldSpawn = GetEnt( "worldspawn" )
+			p.TakeDamage( 1, worldSpawn, worldSpawn, { damageSourceId = eDamageSourceId.mp_titanweapon_stun_laser } )
 		}
 	}
 	wait 3

@@ -1,0 +1,59 @@
+WeaponData
+{
+	Mods
+	{
+		mod_spider
+		{
+
+		}
+
+		clustermissile_fast_recharge
+		{
+			"fire_rate"   									"*2.2"
+		}
+
+		mod_ordnance_core
+		{
+			"fire_rate"   									"*1.25"
+		}
+
+		dev_mod_low_recharge
+		{
+			"fire_rate"   									"*20"
+		}
+		burn_mod_titan_dumbfire_rockets
+		{
+			"projectile_drift_windiness"					"*0.2"
+			"projectile_drift_intensity"					"*0.2"
+			"projectile_straight_time_min"					"*0.2"
+			"projectile_straight_time_max"					"*0.2"
+			"projectile_straight_radius_min"				"*0.2"
+			"projectile_straight_radius_max"				"*0.2"
+			"fire_rate"   									"*1.25"
+			"is_burn_mod"		"1"
+		}
+		pas_ion_tripwire
+		{
+			"shared_energy_cost"							"0"
+		}
+
+		tcp_arc_trip
+		{
+			"regen_ammo_refill_rate"						"10"
+		}
+                                bt_trip{
+
+"regen_ammo_refill_rate"						"20"
+                                    }
+                                    
+         	fastfill
+		{
+			"regen_ammo_refill_rate"						"*4"
+		}
+		unfastfill
+		{
+			"regen_ammo_refill_rate"						"/2"
+		}
+
+	}
+}

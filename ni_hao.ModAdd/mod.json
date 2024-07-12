@@ -1,0 +1,66 @@
+{
+	"Name": "ModAdd",
+	"Description": " ",
+	"Version": "1.2.0",
+	"LoadPriority": 30,
+	"ConVars": [
+	],
+	"Scripts": [
+		{
+			"Path": "/modweapons/vanilla_miss/mp_weapon_gunship_turret_fixed.nut",
+			"RunOn": "CLIENT || SERVER",
+			"ClientCallback": {
+                "After": "MpWeaponGunshipTurret_Init"
+            },
+            "ServerCallback": {
+                "After": "MpWeaponGunshipTurret_Init"
+            }
+		},
+		{
+			"Path": "/modweapons/vanilla_miss/mp_weapon_gunship_missile_fixed.nut",
+			"RunOn": "CLIENT || SERVER",
+			"ClientCallback": {
+                "After": "MpWeaponGunshipMissile_Init"
+            },
+            "ServerCallback": {
+                "After": "MpWeaponGunshipMissile_Init"
+            }
+		},
+		{
+			"Path": "/gamemode/_gamemode_fd_eventss.nut",
+			"RunOn": "SERVER && MP "
+		},
+		{
+			"Path": "/gamemode/_gamemode_fd_eventsss.nut",
+			"RunOn": "SERVER && MP ",
+			"ServerCallback": {
+                "After": "CreateRandomTitanEvent"
+            }
+		},
+		{
+			"Path": "/ModAdd/fd_money.gnut",
+			"RunOn": "( SERVER ) && MP",
+			"ServerCallback": {
+                "After": "fd_money_Init"
+            }
+		},
+		{
+			"Path": "/ModAdd/fd_loop.gnut",
+			"RunOn": "( SERVER ) && MP",
+			"ServerCallback": {
+                "After": "MainFunc_Init"
+            }
+		},
+		{
+			"Path": "/ModAdd/night_combat.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "/ModAdd/anti_afk.nut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+                "After": "AntiAFK_Init"
+            }
+		}
+	]
+}

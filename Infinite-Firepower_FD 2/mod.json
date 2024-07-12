@@ -1,0 +1,225 @@
+{
+	"Name": "ifp-base-package",
+	"LoadPriority": 20,
+	"Scripts": [
+
+		// custom loaded inits //
+		{
+			"Path": "tcp_loadedinits.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "LoadedInits_Init"
+			}
+		},
+
+		// modify //
+		{
+			"Path": "modify/_titanchange.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "modify/_pilotchange.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "modify/_pilotshield.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "modify/loadout_tips.gnut",
+			"RunOn": "SERVER && MP"
+		},
+
+		// KillStreak //
+
+		{
+			"Path": "killstreak/_killstreak.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "KillStreak_Init"
+			}
+
+		},
+		{
+			"Path": "killstreak/_ksgui.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "killstreak/sh_apply.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "killstreak/sh_nuke_titan.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "killstreak/cruise_missile.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "CruiseMissile_Init"
+			}
+		},
+		{
+			"Path": "killstreak/vtol.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "VTOL_Init"
+			}
+		},
+		{
+			"Path": "killstreak/nuclear_bomb.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "NuclearBomb_Init"
+			}
+		},
+
+		// util shared //
+
+		{
+			"Path": "tcputil/shared/sh_convar_util.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "tcputil/shared/sh_entity_util.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		// {
+		// 	"Path": "tcputil/shared/sh_better_respawn_point.gnut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		{
+			"Path": "tcputil/shared/sh_hudmsg_priority.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "HudMessagePriority_Init"
+			}
+		},
+		{
+			"Path": "tcputil/shared/sh_votecommand.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "VoteCommand_Init"
+			}
+		},
+		{
+			"Path": "tcputil/shared/sh_chatcommand.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "ChatCommand_Init"
+			}
+		},
+
+		{"Path": "cloak.nut",
+            "RunOn": "SERVER && MP",
+            "ServerCallback": {
+                "After": "cloak"}
+			},
+
+		// utilitys //
+
+		// {
+		// 	"Path": "tcputil/random_map.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/anti_afk.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/teamshuffle.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/night_sky.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/colorful_chat.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/auto_shutdown.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/anti_insult.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/disable_aimassist.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/dev_tarck_usage.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+		// {
+		// 	"Path": "tcputil/vote_skipmatch.nut",
+		// 	"RunOn": "SERVER && MP"
+		// },
+
+		// moddify weapons //
+
+		{
+			"Path": "weapons/mod_weapon_inits.nut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "ModWeaponInit"
+			}
+		},
+		{
+			"Path": "modify_weapons/mp_ability_zipline_gun.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "MpAbilityZiplineGun_Init"
+			}
+		},
+		{
+			"Path": "modify_weapons/mp_ability_wraith_portal.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "MpAbilityWraithPortal_Init"
+			}
+		},
+		{
+			"Path": "modify_weapons/mp_weapon_wrecking_ball.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "MpWeaponWreckingBall_Init"
+			}
+		},
+		{
+			"Path": "modify_weapons/mp_ability_gravity_lift.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "MpAbilityGravityLift_Init"
+			}
+		},
+		{
+			"Path": "modify_weapons/mp_ability_holoshift.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "MpAbilityHoloShift_Init"
+			}
+		},
+		{
+			"Path": "modify_weapons/mp_ability_cloak_field.gnut",
+			"RunOn": "SERVER && MP"
+		}
+	],
+	"ConVars": [
+		{
+            "Name": "random_map_playlist",
+            "DefaultValue": ""
+        },
+		{
+			"Name": "random_killstreak_players",
+			"DefaultValue": ""
+		},
+		{
+			"Name": "is_server_frist_start",
+			"DefaultValue": "1"
+		}
+	]
+}

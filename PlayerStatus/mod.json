@@ -1,0 +1,16 @@
+{
+  "Name": "StatusDisplay",
+  "Description": "Display the player's status using RUI.",
+  "Authors": ["KKoishi_"],
+  "LoadPriority": 102,
+  "RequiredOnClient": false,
+  "Scripts": [
+    {
+      "Path": "status_display.nut",
+      "RunOn": "SERVER && MP",
+      "ServerCallback": {
+        "After": "status_display_init"
+      }
+    }
+  ]
+}

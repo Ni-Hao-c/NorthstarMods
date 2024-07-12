@@ -1,0 +1,315 @@
+untyped
+global function KsGUI_Init
+global function SendKsGUI_Threaded
+
+void function KsGUI_Init()
+{
+	AddCallback_OnClientConnected( OnClientConnected )
+	RegisterSignal( "SendingNewGUI" )
+}
+
+// KSGUI消息优先级： 发布时：100， 淡出时：90
+// 不建议将其他hud消息设置为比100更高的值，否则玩家可能看不到ksgui，但是他们依旧可以正常切换元素和使用元素
+// KSGUI message priority: on release: 100, on fadeout: 90
+// do not set other hudmsg`s priority higher then 100, else player will can not see ksgui, but they still can switch and use it
+
+void function SendKsGUI_Threaded( entity player, string text, vector rgb, float time, float fadeoutTime, string functionref( entity, string, string ) textChangeFunc = null, float pos = 0.3 )
+{
+	player.EndSignal( "OnDestroy" )
+	player.Signal( "SendingNewGUI" )
+	player.EndSignal( "SendingNewGUI" )
+
+	string output
+	for( int i = int( time * 10 ); i > 0; i-- )
+	{
+		if( textChangeFunc != null )
+			output = textChangeFunc( player, text, output )
+		else
+			output = text
+		SendHudMessageWithPriority( player, 100, output, -1, pos, rgb, < 0, 0.2, 0 > )
+		WaitFrame()
+	}
+	player.s.GUIActive = false
+	float fadeoutTick = fadeoutTime * 10
+	vector rgbFadeout = < rgb.x / fadeoutTick, rgb.y / fadeoutTick, rgb.z / fadeoutTick >
+	for( int i = int( fadeoutTick ); i > 0; i-- )
+	{
+		rgb = rgb - rgbFadeout
+
+		if( textChangeFunc != null )
+			output = textChangeFunc( player, text, output )
+		else
+			output = text
+
+		SendHudMessageWithPriority( player, 90, output, -1, pos, rgb, < 0, 0.2, 0 > )
+		WaitFrame()
+	}
+	player.s.GUIClose = true
+}
+
+void function OnClientConnected( entity player )
+{
+	player.s.GUIIndex <- 0
+	player.s.GUIActive <- false
+	player.s.GUIClose <- true
+	player.s.DisableGUI <- false
+	AddPlayerHeldButtonEventCallback( player, IN_OFFHAND2, KsGUI, 0 )
+}
+
+void function KsGUI( entity player )
+{
+	if( !KillStreakEnable() )
+		return
+
+	table result = {}
+	result.timeOut <- false
+
+	OnThreadEnd(
+		function() : ( player, result )
+		{
+			if( !IsValid( player ) || result.timeOut )
+				return
+			if( player.s.DisableGUI || !player.IsHuman() )
+				return
+
+			KsGUI_Switch( player )
+		}
+	)
+
+	wait 0.3
+	if( player.s.DisableGUI || !player.IsHuman() )
+		return
+
+	if( player.s.GUIClose && PlayerHasMaxBatteryCount( player ) )
+	{
+		result.timeOut <- true
+		return DropBattery( player )
+	}
+	if( !player.s.GUIActive )
+		return
+
+	result.timeOut <- true
+	KsGUI_Select( player )
+}
+
+const array<string> KSGUI_ELEM = [ "核武泰坦", "巡弋飞弹", "抽奖", "折叠时空武器", "丢出电池", "使用电池" ]
+
+void function KsGUI_Switch( entity player )
+{
+	if( player.s.GUIClose && player.s.GUIIndex >= 4 )
+		player.s.GUIIndex = 0
+	if( player.s.GUIActive )
+	{
+		if( player.s.GUIIndex < KSGUI_ELEM.len() - 1 )
+			player.s.GUIIndex += 1
+		else
+			player.s.GUIIndex = 0
+	}
+
+	player.s.GUIActive = true
+	player.s.GUIClose = false
+
+	array<var> skippedElem = []
+	if( player.s.NukeTitan == 0 )
+		skippedElem.append( 0 )
+	if( player.s.CruiseMissile == 0 )
+		skippedElem.append( 1 )
+	if( GetPlayerMoney( player ) < 500 )
+		skippedElem.append( 2 )
+	if( !player.s.HaveNuclearBomb )
+		skippedElem.append( 3 )
+	if( !PlayerHasMaxBatteryCount( player ) )
+		skippedElem.append( 4 )
+	if( !PlayerHasMaxBatteryCount( player ) || player.GetShieldHealth() == player.GetShieldHealthMax() )
+		skippedElem.append( 5 )
+
+	if( skippedElem.len() == KSGUI_ELEM.len() )
+	{
+		player.s.GUIIndex = -1
+		player.s.GUIActive = false
+	}
+	else while( skippedElem.contains( player.s.GUIIndex ) )
+	{
+		if( player.s.GUIIndex < KSGUI_ELEM.len() - 1 )
+			player.s.GUIIndex += 1
+		else
+			player.s.GUIIndex = 0
+	}
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "menu_click" )
+	thread SendKsGUI_Threaded( player, "", < 200, 200, 255 >, 2, 1, KsGUITextChange )
+}
+
+string function KsGUITextChange( entity player, string baseText, string text )
+{
+	array<var> skippedElem = []
+	if( player.s.NukeTitan == 0 )
+		skippedElem.append( 0 )
+	if( player.s.CruiseMissile == 0 )
+		skippedElem.append( 1 )
+	if( GetPlayerMoney( player ) < 500 )
+		skippedElem.append( 2 )
+	if( !player.s.HaveNuclearBomb )
+		skippedElem.append( 3 )
+	if( !PlayerHasMaxBatteryCount( player ) )
+		skippedElem.append( 4 )
+	if( !PlayerHasMaxBatteryCount( player ) || player.GetShieldHealth() == player.GetShieldHealthMax() )
+		skippedElem.append( 5 )
+
+	if( skippedElem.len() == KSGUI_ELEM.len() )
+	{
+		player.s.GUIIndex = -1
+		player.s.GUIActive = false
+	}
+	else if( player.s.GUIIndex == -1 )
+		player.s.GUIIndex = 0
+
+	bool onlyShowBatteryElem = false
+	if( skippedElem.contains( 0 ) && skippedElem.contains( 1 ) && skippedElem.contains( 2 ) && skippedElem.contains( 3 ) )
+		onlyShowBatteryElem = true
+
+	if( player.s.GUIIndex != -1 )
+	{
+		while( skippedElem.contains( player.s.GUIIndex ) )
+		{
+			if( !onlyShowBatteryElem && player.s.GUIIndex == 4 )
+				break
+			if( player.s.GUIIndex < KSGUI_ELEM.len() - 1 )
+				player.s.GUIIndex += 1
+			else
+				break
+		}
+		while( skippedElem.contains( player.s.GUIIndex ) )
+		{
+			if( player.s.GUIIndex > 0 )
+				player.s.GUIIndex += 1
+			else
+				player.s.GUIIndex = KSGUI_ELEM.len() - 1
+		}
+	}
+
+	local index = player.s.GUIIndex
+	string text = "短按切换 == Main Menu == 长按选中\n\n"
+	bool isFristElem = true
+
+	for( int i = 0; i < KSGUI_ELEM.len(); i++ )
+	{
+		if( index == -1 )
+		{
+			text += "啥都木有 ┐(‘～`;)┌"
+			break
+		}
+
+		if( skippedElem.contains( i ) )
+			continue
+
+		if( i == 4 )
+		{
+			isFristElem = true
+			if( !onlyShowBatteryElem )
+				text += "\n"
+		}
+
+		// ◆text1(03)◆ "-" ◇text2◇
+		if( !isFristElem )
+			text += "-"
+		isFristElem = false
+
+		//" "◆text1(03)◆ -" "◇text2◇
+		text += " "
+
+		// "◆"text1(03)◆ - "◇"text2◇
+		if( i == index )
+			text += "◆"
+		else
+			text += "◇"
+
+		// ◆"text1"(03)◆ - ◇"text2"◇
+		text += KSGUI_ELEM[i]
+
+		// ◆text1"(03)"◆ - ◇text2◇
+		if( i == 0 )
+			text += "("+ player.s.NukeTitan +")"
+		if( i == 1 )
+			text += "("+ player.s.CruiseMissile +")"
+
+		// ◆text1(03)"◆" - ◇text2"◇"
+		if( i == index )
+			text += "◆"
+		else
+			text += "◇"
+
+		// ◆text1(03)◆" "- ◇text2◇" "
+		text += " "
+	}
+	if( onlyShowBatteryElem || ( skippedElem.contains( 4 ) && skippedElem.contains( 5 ) ) )
+		text += "\n"
+	text += "\n\n\n\n\n\n\n"
+
+	table timeParts = GetUnixTimeParts( GetUnixTimestamp() + 8 * SECONDS_PER_HOUR )
+	table<string,string> timeTable
+	foreach( k, v in timeParts )
+	{
+		timeTable[ string( k ) ] <- string( v )
+		if( v < 10 )
+			timeTable[ string( k ) ] = "0"+ string( v )
+	}
+	text += timeTable["year"] +"/"+ timeTable["month"] +"/"+ timeTable["day"] +" "+ timeTable["hour"] +":"+ timeTable["minute"] +":"+ timeTable["second"] +"\n"
+
+	table<int> ksData = GetKillStreakData()
+	text += "\n铁驭生命值: "+ player.GetHealth() +"/"+ player.GetMaxHealth() +"	 护甲生命值: "+ player.GetShieldHealth() +"/"+ player.GetShieldHealthMax() +"\n"
+	if( GameRules_GetGameMode() == "fd" )
+	{
+	text += "\n采集機生命值: "+ fd_harvester.harvester.GetHealth() +"/"+ fd_harvester.harvester.GetMaxHealth() +"	 护甲生命值: "+ fd_harvester.harvester.GetShieldHealth() +"/"+ fd_harvester.harvester.GetShieldHealthMax() +"\n"
+	//text += "好buff["+  expect string( player.s.hbuff )+ "]\n"
+	//text += "坏buff["+  expect string( player.s.kbuff )+ "]\n"
+	}
+
+	//text += "\n====== 连杀奖励获取进度 ======\n"
+	//text += "总杀["+ GetProgress( expect int( player.s.TotalKills ) % ksData.nukeTitan, ksData.nukeTitan ) + "]核武泰坦\n"
+	//text += "总杀["+ GetProgress( expect int( player.s.TotalKills ) % ksData.cruiseMissile, ksData.cruiseMissile ) + "]巡弋飞弹\n"
+	//text += "连续击杀["+ GetProgress( expect int( player.s.KillStreakNoNPC ) % ksData.nuclearBomb, ksData.nuclearBomb ) + "]折叠时空武器\n"
+
+	return text
+}
+
+void function KsGUI_Select( entity player )
+{
+	player.s.GUIActive = false
+
+	local index = player.s.GUIIndex
+	if( index == 0 )
+		return KeepingApplyNukeTitan( player )
+	if( index == 1 )
+		return ApplyCruiseMissile( player )
+	if( index == 2 )
+		return ApplyVTOL( player )
+	if( index == 3 )
+		return ApplyNuclearBomb( player )
+	if( index == 4 )
+		return ApplyDropBattery( player )
+	if( index == 5 )
+		return ApplyShieldBattery( player )
+}
+
+void function KeepingApplyNukeTitan( entity player )
+{
+	int applytimes = 0
+	for( ;; )
+	{
+		ApplyNukeTitan( player )
+		wait GraphCapped( applytimes, 0, 3, 0.5, 0.2 )
+		applytimes++
+	}
+}
+
+string function GetProgress( int val, int endVal )
+{
+	int sysbolNum = int( GraphCapped( val, 0, endVal, 0, 20 ) )
+	string text = ""
+	for( int i = sysbolNum; i > 0; i-- )
+		text += "/"
+	for( int i = 20 - sysbolNum; i > 0; i-- )
+		text += "-"
+	return text
+}

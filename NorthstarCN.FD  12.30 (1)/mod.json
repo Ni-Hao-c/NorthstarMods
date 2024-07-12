@@ -1,0 +1,158 @@
+{
+	"Name": "NorthstarCN.FD",
+	"Description": " 在Zanieon大佬的NorthstarEN版本上適配，詳細看readme，本mod會覆蓋npc文件，請注意mod的兼容性",
+	"Version": "1.2.0",
+	"LoadPriority": 10,
+	"ConVars": [
+		{
+			"Name": "ns_private_match_auto_rotation_start",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_private_match_map_rotation",
+			"DefaultValue": "mp_angel_city,mp_black_water_canal,mp_grave,mp_colony02,mp_complex3,mp_drydock,mp_eden,mp_thaw,mp_forwardbase_kodai,mp_glitch,mp_homestead,mp_rise,mp_wargames"
+		},
+		{
+			"Name": "sv_spectre_rodeo_reset",
+			"DefaultValue": "0",
+			"HelpString": "Allow Spectres to try rodeoing Titans again after successful attempt."
+		 },
+		 {
+			"Name": "sv_spectre_rodeo_reset_time",
+			"DefaultValue": "10",
+			"HelpString": "Time before Spectre start trying to rodeo Titans again after successful attempt."
+		 },
+		 {
+			"Name": "sv_spectre_rodeo_allow_friendly",
+			"DefaultValue": "1",
+			"HelpString": "Allow Spectres with battery to rodeo friendly Titans."
+		 },
+		 {
+			"Name": "sv_spectre_rodeo_nuke_grenade",
+			"DefaultValue": "1",
+			"HelpString": "Spectres will always use Core Overload grenades when rodeoing."
+		 },
+		{
+            "Name": "ns_fd_elite_minimap_icontype",
+            "DefaultValue": "1",
+			"Flags": 16777216
+        },
+        {
+            "Name": "ns_fd_elite_overhead_icontype",
+            "DefaultValue": "1",
+			"Flags": 16777216
+        },
+		{
+			"Name": "ns_use_phase_fix",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_ronin_fair_phase",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_progression_enabled",
+			"DefaultValue": "0",
+			"Flags": "ARCHIVE_PLAYERPROFILE"
+		},
+		{
+			"Name": "ns_fd_min_numplayers_to_start",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_fd_allow_elite_titans",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_fd_allow_true_shield_captains",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_fd_allow_titanfall_block",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_fd_arc_titans_uses_arc_cannon",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_fd_show_drop_points",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_fd_easymode_smartpistol",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_fd_grunt_at_weapon",
+			"DefaultValue": "mp_weapon_defender"
+		},
+		{
+			"Name": "ns_fd_grunt_primary_weapon",
+			"DefaultValue": "mp_weapon_rspn101,mp_weapon_car,mp_weapon_alternator_smg,mp_weapon_hemlok_smg,mp_weapon_r97"
+		},
+		{
+			"Name": "ns_fd_grunt_grenade",
+			"DefaultValue": "mp_weapon_frag_grenade"
+		},
+		{
+			"Name": "ns_fd_spectre_primary_weapon",
+			"DefaultValue": "mp_weapon_hemlok,mp_weapon_vinson,mp_weapon_g2,mp_weapon_mastiff,mp_weapon_shotgun"
+		},
+		{
+			"Name": "ns_fd_disable_respawn_dropship",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_fd_differentiate_ticks",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_fd_rodeo_highlight",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_reaper_warpfall_kill",
+			"DefaultValue": "1"
+		}
+	],
+	"Scripts": [
+		{
+			"Path": "sh_progression.nut",
+			"RunOn": "UI || SERVER || CLIENT",
+			"ServerCallback": {
+				"Before": "Progression_Init"
+			},
+			"ClientCallback": {
+				"Before": "Progression_Init"
+			},
+			"UICallback": {
+				"Before": "Progression_Init"
+			}
+		},
+		{
+			"Path": "ui/ns_gamemode_fd.nut",
+            "RunOn": "UI",
+            "UICallback": {
+                "Before": "EliteIconSettings_Init"
+            }
+		},
+		{
+			"Path": "gamemodes/_gamemode_fd_events.nut",
+			"RunOn": "( SERVER ) && MP"
+		},
+		{
+			"Path": "gamemodes/_gamemode_fd_nav.nut",
+			"RunOn": "( SERVER ) && MP"
+		},
+		{
+			"Path": "ai/_ai_elite_titans.nut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "EliteTitans_Init"
+			}
+		}
+		
+
+	]
+}

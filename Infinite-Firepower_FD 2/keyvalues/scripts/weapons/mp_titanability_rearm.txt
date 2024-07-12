@@ -1,0 +1,18 @@
+WeaponData
+{
+	Mods
+	{
+		pas_vanguard_rearm
+		{
+		}
+
+		rapid_rearm
+		{
+		}
+
+		tcp_no_gravity
+		{
+			"regen_ammo_refill_rate"						"10"
+		}
+	}
+}

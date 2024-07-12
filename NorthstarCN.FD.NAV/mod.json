@@ -1,0 +1,6 @@
+{
+	"Name": "NorthstarCN.FD.NAV",
+	"Description": " 在Zanieon大佬的NorthstarEN版本上適配，是npc的導航路徑，請注意mod的兼容性",
+	"Version": "1.2.0",
+	"LoadPriority": 10
+}

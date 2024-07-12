@@ -1,0 +1,732 @@
+// anywhere can call this func. this will make sky become dark, simulate night environment
+global function Night_Combat_Settings_Init
+global function ExtraSpawner_SpawnGunShip
+
+
+const array<asset> GUNSHIP_VALID_MODELS =
+[
+	$"models/vehicle/straton/straton_imc_gunship_01.mdl",
+	$"models/vehicle/hornet/hornet_fighter.mdl",
+]
+// these are no need to change
+const asset CAREPACKAGE_MODEL = $"models/vehicle/escape_pod/escape_pod.mdl"
+
+// hornet model is easier to be hit than straton
+// so we'd better pick a random one for balancing
+// debug
+const bool EXTRA_SPAWNER_DEBUG = false
+
+// modifiable consts
+
+// npc damage
+
+// npc pilot health
+const int NPC_PILOT_MAX_HEALTH = 750
+const int NPC_PILOT_MAX_HEALTH_BOSS = 1000
+// damage dealt by pilot multiplyer
+const float NPC_PILOT_DAMAGE_MULTIPLIER = 2.0
+// pilot specific damage adjustments
+// hardcode version
+/*
+const int PLAYER_TITAN_MELEE_DAMAGE_NPC_PILOT = 100
+const int NPC_TITAN_MELEE_DAMAGE_NPC_PILOT = 300
+const int TITAN_SOWRD_DAMAGE_NPC_PILOT = 250
+const int TITAN_STEPPING_ON_DAMAGE_NPC_PILOT = 250
+*/
+// graph capped version
+// WIP
+// DPS versions
+const int NPC_PILOT_MAX_DAMAGE_TAKEN_PER_SECOND = 300 // pilots will only take 300 dmg per second
+
+// damage dealt by prowler multiplyer
+// base damage for MP: claw: 80, pounce: 100
+const float NPC_PROWLER_DAMAGE_MULTIPLIER = 0.5
+// damage dealt by prowler to heavy armor units multiplyer
+// base damage for MP: claw: 60-80, pounce: 100
+const float NPC_PROWLER_DAMAGE_MULTIPLIER_HEAVYARMOR = 6.0
+
+// care package
+const float CARE_PACKAGE_MESSAGE_INTERVAL = 3.0 // prevent care package spamming message
+
+// basically medium animation pilots!
+const array<asset> NPC_PILOT_ALLOWED_MODELS =
+[
+	// note that only sp pilots and grunt models have proper animation for a npc
+	// now leaving only sp pilot models
+	// reverted. mp pilot model is good enough for using
+	// sp model is now saved exclusively for boss titan spawns
+	$"models/humans/pilots/pilot_medium_stalker_m.mdl",
+	$"models/humans/pilots/pilot_medium_stalker_f.mdl",
+	$"models/humans/pilots/pilot_medium_geist_m.mdl",
+	$"models/humans/pilots/pilot_medium_geist_f.mdl",
+	$"models/humans/pilots/pilot_medium_reaper_m.mdl",
+	$"models/humans/pilots/pilot_medium_reaper_f.mdl",
+	/*
+	$"models/humans/pilots/sp_medium_geist_f.mdl",
+	$"models/humans/pilots/sp_medium_reaper_m.mdl",
+	$"models/humans/pilots/sp_medium_stalker_m.mdl",
+	*/
+	// now leaving only pilot models, for others maybe spawn with their unique titans( like jack in bt, ash in ronin )
+	/*
+	$"models/humans/grunts/mlt_grunt_lmg.mdl",
+	$"models/humans/grunts/imc_grunt_lmg.mdl",
+	$"models/humans/grunts/imc_grunt_shield_captain.mdl",
+	$"models/Humans/heroes/imc_hero_ash.mdl",
+	$"models/Humans/heroes/imc_hero_blisk.mdl",
+	$"models/humans/heroes/mlt_hero_jack.mdl",
+	$"models/humans/heroes/mlt_hero_sarah.mdl",
+	*/
+]
+
+// this array is hardcoded. it only contains models that included "pete_agent.mdl"( mostly SP pilot models )
+// if pilot has been setup with model in this array, they'll be change to "behavior_pilot_elite_assassin" which makes them able to switch weapon
+const array<asset> NPC_PILOT_SWITCH_WEAPON_ALLOWED_MODELS =
+[
+	$"models/humans/pilots/sp_medium_geist_f.mdl",
+	$"models/humans/pilots/sp_medium_reaper_m.mdl",
+	$"models/humans/pilots/sp_medium_stalker_m.mdl",
+]
+
+// for ExtraSpawner_SpawnTitan() picking random titans
+struct TitanSpawnStruct
+{
+	string setFile = ""
+	string aiSet = ""
+	string executionRef = "" // funny with MeleeSyncedNPC
+	// after being embarked by npcs
+	string embarkedAiSet = ""
+	string embarkedBehavior = ""
+	string embarkedTitle = ""
+
+	void functionref( entity ) loadoutFunction = null
+	// team skin
+	int imcSkinIndex = -1
+	int mltSkinIndex = -1
+}
+
+// for ExtraSpawner_SpawnBossTitan() picking random titans
+struct BossTitanSpawnStruct
+{
+	string bossName = ""
+
+	string setFile = ""
+	string aiSet = ""
+	string behavior = ""
+	string executionRef = "" // funny with MeleeSyncedNPC
+	string bossTitle = ""
+	string pilotTitle = ""
+	asset characterModel = $""
+
+	void functionref( entity ) loadoutFunction = null
+	// skin
+	int skinIndex = -1
+	int decalIndex = -1
+}
+
+// after being embarked by npcs
+struct EmbarkedNPCTitanStruct
+{
+	string embarkedAiSet = ""
+	string embarkedBehavior = ""
+	string embarkedTitle = ""
+}
+
+// vanguard is the chassis that spawn with random loadout
+// BT model do have animations for them
+// here we store setfile so we can use OverwriteLoadoutWithDefaultsForSetFile() to get loadouts
+// and we'll need to store their unique behavior selector, loadout function, ETC
+// don't want to add specific spawn logic to allow vanguard choose a certain weapon or registering new weapons for them... that will be too complicated
+struct NPCVanguardLoadout
+{
+	string setFile
+	string behaviorSelector
+	void functionref( entity ) loadoutFunction // leave this empty means we'll use OverwriteLoadoutWithDefaultsForSetFile() to get loadouts
+	array<int> lockedAbilities // make some ability won't change on giving default loadout( melee is always unchanged, this doesn't affect loadoutFunction )
+}
+
+struct NPCVanguardPilot
+{
+	string titanTitle
+	string pilotTitle // can't use localized string!
+	asset pilotModel
+	bool neverEjects = false
+}
+
+struct
+{
+	// modifiable variables( through functions )
+	// npc weapons, should we add a struct to set up mods for them?
+	table< string, array<string> > npcMainWeaponsTable
+	table< string, array<string> > npcSecondaryWeaponsTable
+	table< string, array<string> > npcAntiTitanWeaponsTable
+	table< string, array<string> > npcGrenadeWeaponsTable
+	table< string, array<string> > npcExtraWeaponModsTable
+	// npc titan settings
+	table<entity, EmbarkedNPCTitanStruct> soulEmbarkedSettings
+	// for ExtraSpawner_SpawnTitan() picking random titans
+	table<string, TitanSpawnStruct> titanSpawnList
+	// for ExtraSpawner_SpawnBossTitan() picking random titans
+	table<string, BossTitanSpawnStruct> bossTitanSpawnList
+	// for BossLoadout_Vanguard() picking random loadouts
+	array<NPCVanguardLoadout> npcVanguardLoadouts
+	array<NPCVanguardPilot> npcVanguardPilots
+	// npc handler func
+	void functionref( array<entity> ) squadHandlerFunc
+	table< string, void functionref( entity ) > npcHandlerFuncs
+	// care package, now allowing every weapon to have a custom mod array
+	array<string> carePackageWeapons
+	table< string, array<string> > carePackageWeaponMods
+
+	// in-file only variables
+	// care package, for limiting player care package usages
+	array<entity> carePackageUsedPlayers = []
+	table< entity, array<void functionref( entity ent, entity package )> > entityCarePackageUsedCallbacks
+	table< entity, float > playerLastCarePackageNotifiedTime // prevent care package spamming message
+	// for marking the npc as spawning from this file
+	table<entity, bool> npcSpawnFromExtraSpawner
+	// for marking the npc as one of prowler squad
+	table<entity, bool> isProwlerSquadmate
+	// scripted npc dialogue
+	table<entity, float> npcDialogueNextAllowedTimeOnPlayer
+	// gunship forced model for replacement ship spawn
+	table<entity, asset> gunshipForcedSpawnModel
+} file
+
+//================================================================================
+void function Night_Combat_Settings_Init()
+{
+    AddCallback_OnClientConnected( OnClientConnected )
+
+
+}
+
+void function OnClientConnected( entity player )
+{
+    SetPlayerToNightSky( player )
+}
+
+void function SetPlayerToNightSky( entity player )
+{
+    player.SetSkyCamera( GetEnt( SKYBOXSPACE ) )
+    Remote_CallFunction_NonReplay( player, "ServerCallback_SetMapSettings", 1.0, false, null, null, null, null, null, 0.0, 0.5 )
+}
+//==========================================================================================
+
+// void function npc_set_skin( entity npc )
+// {
+//     if( !IsValid( npc ))
+//         return
+
+//     switch ( RandomInt( 5 ) ) {
+//         case 0:
+//             npc.SetModel( $"models/humans/pilots/pilot_medium_stalker_m.mdl")
+//         break;
+//         case 1:
+//             npc.SetModel( $"models/humans/pilots/pilot_medium_stalker_f.mdl")
+//         break;
+//         case 2:
+//             npc.SetModel( $"models/humans/pilots/pilot_medium_reaper_m.mdl")
+//         break;
+//         case 3:
+//             npc.SetModel( $"models/humans/pilots/pilot_medium_reaper_f.mdl")
+//         break;
+//         case 4:
+//             npc.SetModel( $"models/humans/pilots/pilot_medium_geist_m.mdl")
+//         break;
+//         default:
+//             npc.SetModel( $"models/humans/pilots/pilot_medium_geist_f.mdl")
+//         break;
+//     }
+// }
+
+//==========================================================================================
+
+
+// //=================================
+entity function ExtraSpawner_SpawnGunShip( vector pos, vector rot, int team )
+{
+	// pick an random model and we keep using it for current gunship spawn think
+	asset gunshipModel = GUNSHIP_VALID_MODELS[ RandomInt( GUNSHIP_VALID_MODELS.len() ) ]
+
+	// first gunship: only for playing animation
+	// its a hack! gunship after animation stops thinking for some reason
+	// needs to spawn a new one
+	entity animGunship = CreateNPC( "npc_gunship", team, pos, rot )
+	// for other files can recognize this is a gunship that only used for playing animation
+	// removing. "npc_gunship_scripted" is a separented class, not the same as "npc_gunship"
+	//SetSpawnOption_AISettings( animGunship, "npc_gunship_scripted" )
+	HideName( animGunship ) // this gunship will be deleted soon, never show it's name
+
+	file.npcSpawnFromExtraSpawner[ animGunship ] <- true // adding this mark so we can update gunship's model on their spawn
+	file.gunshipForcedSpawnModel[ animGunship ] <- gunshipModel // assign forced model
+	DispatchSpawn( animGunship )
+	GunshipSpawnSettings( animGunship ) // clean up stuffs that have been setup in _ai_spawn_content.gnut
+
+	// setup visual
+	SetDefaultMPEnemyHighlight( animGunship )
+	//AddMinimapForNPC( animGunship ) // only dropships can show on map though, gunships are not trakced by client
+
+	// dont let AI titan get enemies while flying. Don't do trigger checks, become invulnerable
+	ExtraSpawner_DisableSensingForNPC( animGunship, true )
+	animGunship.NotSolid()
+
+	// fly in
+	thread PlayAnim( animGunship, "st_AngelCity_IMC_Win_ComeIn" ) // flying anim
+	// warp effect
+	thread WarpInEffectGunship( animGunship )
+    WaittillAnimDone( animGunship )
+
+	vector offset = < 0, 0, -30 > // actual spawnpoint is not identical as animation's origin( doesn't really affects )
+	vector spawnpoint = animGunship.GetOrigin() + offset
+	vector spawnang = animGunship.GetAngles()
+
+	// replacement gunship
+	// its a hack! gunship after animation stops thinking for some reason
+	// needs to spawn a new one
+	if ( !IsValid( animGunship ) ) // if gunship already destroyed for some reason
+		return // don't run following replacement code
+	//gunship.Destroy() // might be a little weird because it's trail gonna disappear immediately
+	// now using delayed destroy, so we can wait for trail fadeout normally
+	thread DelayedDestroyAnimGunship( animGunship )
+
+	// spawning new gunship for combating( their behavior is bad though, almost never attack anybody )
+	entity gunship = CreateNPC( "npc_gunship", team, spawnpoint, spawnang )
+	// dropship dogfighter version... abandoned, they're not smart enough
+	/*
+	entity gunship = CreateNPC( "npc_dropship", team, spawnpoint, spawnang )
+	SetSpawnOption_AISettings( gunship, "npc_dropship_dogfighter" )
+	gunship.SetBehaviorSelector( "behavior_gunship" )
+	*/
+
+	// setup accruacy
+	gunship.kv.WeaponProficiency = eWeaponProficiency.VERYGOOD // turrets inherit weapon proficiency from gunship
+	gunship.kv.AccuracyMultiplier = 2 // higher accuracy because they're flying around. turrets inherit it's accuracy
+
+	file.npcSpawnFromExtraSpawner[ gunship ] <- true // adding this mark so we can update gunship's model on their spawn
+	file.gunshipForcedSpawnModel[ gunship ] <- gunshipModel // assign forced model
+	DispatchSpawn( gunship )
+	GunshipSpawnSettings( gunship ) // clean up stuffs that have been setup in _ai_spawn_content.gnut
+
+	// visual effect
+	gunship.e.hasDefaultEnemyHighlight = true // mark them as hasDefaultHighlight, so they'll save highlights after phase shift
+	SetDefaultMPEnemyHighlight( gunship )
+	//AddMinimapForNPC( gunship ) // only dropships can show on map though, gunships are not trakced by client
+
+	// attach turrets to them for attacking!
+	TakeAllWeapons( gunship )
+
+	// a gunship always have a turret weapon
+	table< string, asset > gunshipValidWeaponAndModel
+	gunshipValidWeaponAndModel["mp_weapon_gunship_turret"] <- PLASMA_TURRET_MODEL // was HITSCAN_TURRET_MODEL, but it's barrel don't look nice enough for XO16 firing sound
+	// then they'll pick an weapon from launcher or missile
+	// temp not enabled. gunship_launcher can make them unable to hit each other, which is pretty bad
+	/*
+	if ( CoinFlip() )
+		gunshipValidWeaponAndModel["mp_weapon_gunship_launcher"] <- PLASMA_TURRET_MODEL
+	else
+		gunshipValidWeaponAndModel["mp_weapon_gunship_missile"] <- ROCKET_TURRET_MODEL
+	*/
+	gunshipValidWeaponAndModel["mp_weapon_gunship_missile"] <- ROCKET_TURRET_MODEL
+
+	const array<string> validAttachments = ["L_turret_attach", "R_turret_attach"]
+
+	// assign specific weapon and mods
+	array<string> validWeapons
+	foreach ( weapon, mods in gunshipValidWeaponAndModel )
+		validWeapons.append( weapon )
+
+	foreach ( string attachment in validAttachments )
+	{
+		if ( validWeapons.len() == 0 ) // no valid weapons left?
+			break
+		string turretWeapon = validWeapons[ RandomInt( validWeapons.len() ) ]
+		asset turretModel = gunshipValidWeaponAndModel[ turretWeapon ]
+		validWeapons.removebyvalue( turretWeapon ) // one gunship shouldn't have two same weapons
+
+		CreateTurretForGunship( gunship, attachment, turretWeapon, turretModel )
+	}
+
+	// start trail effect
+	thread GunshipFlightTrailEffect( gunship )
+	// enemy changed callback
+	gunship.SetEnemyChangeCallback( OnEnemyChanged_Gunship )
+
+	thread FireDepthCharge_int( gunship )
+
+
+	AddMinimapForNPC( gunship ) // show on enemy minimap
+	return gunship
+}
+
+// clean up stuffs that have been setup in _ai_spawn_content.gnut
+void function GunshipSpawnSettings( entity gunship )
+{
+	// removing unfinished leechable gunship
+	DisableLeeching( gunship )
+	gunship.UnsetUsable()
+}
+
+// based on DeployTurret() in mp_ability_turretweapon.nut
+entity function CreateTurretForGunship( entity gunship, string attachment, string weapon = "mp_weapon_gunship_turret", asset turretModel = $"" )
+{
+	entity turret = CreateEntity( "npc_turret_sentry" )
+	SetSpawnOption_AISettings( turret, "npc_turret_sentry" )
+
+	turret.SetOwner( gunship ) // disable collision with gunship so they can shoot bullets through
+	turret.ai.preventOwnerDamage = true
+	turret.StartDeployed()
+
+	SetTeam( turret, gunship.GetTeam() )
+	EmitSoundOnEntity( turret, "Boost_Card_SentryTurret_Deployed_3P" )
+	turret.Highlight_SetInheritHighlight( true ) // setup highlight
+
+	DispatchSpawn( turret )
+	// update model after dispatchSpawn
+	// never do model update after parented, will instantly crash the game
+	if ( turretModel != $"" )
+	{
+		turret.SetValueForModelKey( turretModel )
+		turret.SetModel( turretModel )
+	}
+	// attach to gunship
+	turret.SetParent( gunship, attachment )
+	turret.SetOrigin( <0, 0, 1> ) // offset from attachment
+
+	// change weapon
+	TakeAllWeapons( turret )
+	turret.GiveWeapon( weapon )
+	turret.SetActiveWeaponByName( weapon )
+
+	// currently turret is bind together with gunship and cannot be destroyed
+	HideName( turret )
+	turret.SetInvulnerable()
+	turret.SetNoTarget( true )
+	turret.SetNoTargetSmartAmmo( true )
+	turret.SetAimAssistAllowed( false )
+	turret.NotSolid()
+	//turret.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY // this will also hide all effects that may play on it
+	SentryTurretStopLaser( turret ) // modified function in _ai_turret_sentry.gnut, stop laser effect
+
+	// gunship life tracker
+	thread GunshipTurretThink( turret, gunship )
+	thread TrackTurretOwnerGunshipDeath( turret, gunship )
+	// unused behavior
+	//thread DestroyOnDeathDelayed( turret, 0.15 )
+
+	return turret
+}
+
+// sync everything with the gunship
+void function GunshipTurretThink( entity turret, entity gunship )
+{
+	turret.EndSignal( "OnDestroy" )
+	gunship.EndSignal( "OnDestroy" )
+	while ( true )
+	{
+		if ( turret.GetTitle() != gunship.GetTitle() )
+			turret.SetTitle( gunship.GetTitle() )
+
+		if ( turret.GetEnemy() != gunship.GetEnemy() )
+		{
+			if ( !IsValid( gunship.GetEnemy() ) )
+				turret.ClearEnemy()
+			else
+				turret.SetEnemy( gunship.GetEnemy() )
+		}
+
+		if ( turret.kv.WeaponProficiency != gunship.kv.WeaponProficiency )
+			turret.kv.WeaponProficiency = gunship.kv.WeaponProficiency
+		if ( turret.kv.AccuracyMultiplier != gunship.kv.AccuracyMultiplier )
+			turret.kv.AccuracyMultiplier = gunship.kv.AccuracyMultiplier
+
+		wait 0.25 // same wait as GunshipThink() does
+	}
+}
+
+void function TrackTurretOwnerGunshipDeath( entity turret, entity gunship )
+{
+	turret.EndSignal( "OnDestroy" )
+	WaitSignal( gunship, "OnDeath", "OnDestroy" )
+	turret.Destroy()
+}
+
+void function DestroyOnDeathDelayed( entity turret, float delay )
+{
+	turret.EndSignal( "OnDestroy" )
+	turret.WaitSignal( "OnDeath" )
+
+	wait delay
+
+	// TODO: explosion or other FX
+	turret.Destroy()
+}
+
+// from _evac.gnut, my own function with some tweak
+void function WarpInEffectGunship( entity gunship )
+{
+	gunship.EndSignal( "OnDestroy" )
+	gunship.Hide() // this still shows it's lights
+	//gunship.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+
+	float sfxWait = 0.1
+	float totalTime = WARPINFXTIME
+	float preWaitTime = 0.16 // give it some time so it's actually playing anim, and we can get it's "origin" attatch
+	string sfx = "dropship_warpin"
+
+	wait preWaitTime
+
+	int attach = gunship.LookupAttachment( "origin" )
+	vector origin = gunship.GetAttachmentOrigin( attach )
+	vector angles = gunship.GetAttachmentAngles( attach )
+
+	gunship.Show()
+	//gunship.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	entity fx = PlayFX( FX_GUNSHIP_CRASH_EXPLOSION_ENTRANCE, origin, angles )
+	fx.FXEnableRenderAlways()
+	fx.DisableHibernation()
+
+	wait sfxWait
+	EmitSoundAtPosition( TEAM_UNASSIGNED, origin, sfx )
+
+	wait totalTime - sfxWait
+}
+
+void function DelayedDestroyAnimGunship( entity animGunship )
+{
+	animGunship.EndSignal( "OnDestroy" )
+	animGunship.Hide() // this still shows it's lights, but trail also needed to show
+	if ( !animGunship.IsFrozen() ) // anti-crash for post-match cleanup condition( which will freeze all npcs )
+		animGunship.Freeze() // freeze gunship so it can't move
+
+	wait 0.8 // wait for trail fadeout normally
+	if( IsValid(animGunship) )
+	animGunship.Destroy()
+}
+
+void function GunshipFlightTrailEffect( entity gunship )
+{
+	array<entity> fxs
+	fxs.append( PlayLoopFXOnEntity( $"veh_contrails_01", gunship, "L_WING_TIP", null, null, ENTITY_VISIBLE_TO_EVERYONE ) )
+	fxs.append( PlayLoopFXOnEntity( $"veh_contrails_01", gunship, "R_WING_TIP", null, null, ENTITY_VISIBLE_TO_EVERYONE ) )
+	//fxs.append( PlayLoopFXOnEntity( $"veh_jetwash_exit_eng_blast", gunship, "L_exhaust_rear_1", null, null, ENTITY_VISIBLE_TO_EVERYONE ) )
+	//fxs.append( PlayLoopFXOnEntity( $"veh_jetwash_exit_eng_blast", gunship, "R_exhaust_rear_1", null, null, ENTITY_VISIBLE_TO_EVERYONE ) )
+
+	// make them have infinite fadedist like dogfighter trails( the diffence is those trails are played by client-side )
+	foreach ( fx in fxs )
+		fx.DisableHibernation()
+
+	OnThreadEnd
+	(
+		function(): ( fxs )
+		{
+			foreach ( fx in fxs )
+			{
+				if ( IsValid( fx ) )
+					EffectStop( fx )
+			}
+		}
+	)
+
+	WaitSignal( gunship, "OnDestroy" ) // gunship gets destroyed once they died
+}
+
+void function OnEnemyChanged_Gunship( entity gunship )
+{
+	GunshipJetBurstEffect( gunship )
+}
+
+// jet burst effect for gunship
+void function GunshipJetBurstEffect( entity gunship )
+{
+	//print( "RUNNING GunshipJetBurstEffect()" )
+	thread GunshipJetBurstEffect_Threaded( gunship )
+}
+
+// stop last played jet effect when we starting a new one
+void function GunshipJetBurstEffect_Threaded( entity gunship )
+{
+	gunship.Signal( "GunshipJetBurstEffect" )
+	gunship.EndSignal( "GunshipJetBurstEffect" )
+
+	array<entity> fxs
+	fxs.append( PlayFXOnEntity( $"veh_jetwash_exit_eng_blast", gunship, "L_exhaust_rear_1" ) )
+	fxs.append( PlayFXOnEntity( $"veh_jetwash_exit_eng_blast", gunship, "R_exhaust_rear_1" ) )
+	// make them have infinite fadedist like dogfighter trails( the diffence is those trails are played by client-side )
+	foreach ( fx in fxs )
+		fx.DisableHibernation()
+
+	OnThreadEnd
+	(
+		function(): ( fxs )
+		{
+			foreach ( fx in fxs )
+			{
+				if ( IsValid( fx ) )
+					EffectStop( fx )
+			}
+		}
+	)
+
+	WaitSignal( gunship, "OnDestroy" ) // gunship gets destroyed once they died
+}
+
+void function OnGunshipSpawned( entity gunship )
+{
+	if ( gunship in file.npcSpawnFromExtraSpawner )
+	{
+		asset gunshipModel = $""
+		// gunship may have a specific model picked
+		// because if they played an intro, we'll need to spawn a new gunship and they should keep the same model
+		// we'll use that
+		if ( gunship in file.gunshipForcedSpawnModel )
+			gunshipModel = file.gunshipForcedSpawnModel[ gunship ]
+		else // otherwise we just pick a random one
+			gunshipModel = GUNSHIP_VALID_MODELS[ RandomInt( GUNSHIP_VALID_MODELS.len() ) ]
+
+		if ( gunshipModel != $"" )
+		{
+			gunship.SetValueForModelKey( gunshipModel )
+			gunship.SetModel( gunshipModel )
+		}
+	}
+}
+void function ExtraSpawner_DisableSensingForNPC( entity npc, bool invulnerable = false, bool hide = false, bool freeze = false )
+{
+	npc.SetEfficientMode( true )
+	npc.SetTouchTriggers( false )
+	npc.SetAimAssistAllowed( false )
+
+	if ( invulnerable )
+	{
+		npc.SetInvulnerable()
+		npc.SetNoTarget( true ) // notarget bind together with invulnerablility
+	}
+	if ( hide )
+	{
+		npc.Hide()
+		HideName( npc )
+		RemoveMinimapForNPC( npc )
+	}
+	if ( freeze )
+	{
+		if ( !npc.IsFrozen() )
+			npc.Freeze()
+	}
+}
+
+void function AddMinimapForNPC( entity guy )
+{
+	if ( !IsAlive( guy ) )
+		return
+
+	// map
+	guy.Minimap_AlwaysShow( TEAM_IMC, null )
+	guy.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	foreach ( entity player in GetPlayerArray() )
+		guy.Minimap_AlwaysShow( 0, player )
+	guy.Minimap_SetHeightTracking( true )
+
+	if ( GAMETYPE == AI_TDM ) // eMinimapObject_npc.AI_TDM_AI only works for attrition!
+	{
+		// can be found in cl_gamemode_aitdm.nut
+		const array<string> AITDM_VALID_MINIMAP_NPCS =
+		[
+			"npc_soldier",
+			"npc_spectre",
+			"npc_stalker",
+			"npc_super_spectre"
+		]
+		if ( AITDM_VALID_MINIMAP_NPCS.contains( guy.GetClassName() ) )
+			guy.Minimap_SetCustomState( eMinimapObject_npc.AI_TDM_AI )
+	}
+}
+
+void function RemoveMinimapForNPC( entity guy )
+{
+	if ( !IsAlive( guy ) )
+		return
+
+	// map
+	guy.Minimap_Hide( TEAM_IMC, null )
+	guy.Minimap_Hide( TEAM_MILITIA, null )
+	foreach ( entity player in GetPlayerArray() )
+		guy.Minimap_Hide( 0, player )
+	guy.Minimap_SetHeightTracking( false )
+}
+
+void function FireDepthCharge_int( entity gunship )
+{
+	gunship.EndSignal( "OnDestroy" )
+	gunship.EndSignal( "OnDeath" )
+
+	while ( true )
+	{
+		vector pos = gunship.GetOrigin()
+		vector dir = < 0 , 0 , 0>
+		float timeToLand = 1
+		thread FireDepthCharge( gunship, pos, dir , timeToLand )
+		wait 2
+	}
+
+}
+void function FireDepthCharge( entity owner, vector pos, vector dir, float timeToLand )
+{
+    //在这里我们向下发射一条线，长度为10000
+    TraceResults downTrace = TraceLine( pos, pos + < 0.0, 0.0, -10000.0 >, [ owner ], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_BLOCK_WEAPONS )
+    if ( downTrace.fraction == 1.0 )    //如果这条线走完了全程没有碰到任何东西（比如说发射在地底）
+        return
+    vector endPos = downTrace.endPos    //在这里，我们把这条线撞到的位置设置为落点
+	thread Drop_Spawnpoint( endPos, owner.GetTeam(), timeToLand-0.5)   //创建落点标志（调用死神降落落点显示的标志）
+
+    //创建实体并更改其模型
+    entity mover = CreateScriptMover( pos, dir )
+    mover.SetModel( $"models/weapons/bullets/temp_triple_threat_projectile_large.mdl" )
+
+    mover.NonPhysicsMoveTo( endPos, timeToLand, 0.0, 0.0 )  //让实体平滑移动到落点
+
+    wait timeToLand //等待落地
+
+    //核爆fx和声音
+    PlayFX( TITAN_NUCLEAR_CORE_FX_3P, endPos + < 0, 0, 100 >, < 0, RandomInt( 360 ), 0 > )
+	EmitSoundOnEntity( mover, "titan_nuclear_death_explode" )
+    mover.Hide()    //隐藏实体以免玩家在核爆中心看到深水炸弹的模型
+
+    //在这里开始范围伤害
+	for ( int i = 0; i < 3; i++ )
+	{
+		RadiusDamage(
+			endPos,										// center
+			owner,										// attacker
+			mover,							    		// inflictor
+			75,											// damage
+			1500,										// damageHeavyArmor
+			350,										// innerRadius
+			750,										// outerRadius
+			SF_ENVEXPLOSION_NO_DAMAGEOWNER,				// flags
+			0,											// distanceFromAttacker
+			75,											// explosionForce
+			DF_EXPLOSION | DF_STOPS_TITAN_REGEN,		// scriptDamageFlags
+			eDamageSourceId.mp_gunship_depth_charge )	// scriptDamageSourceIdentifier
+
+		wait 0.1
+	}
+
+    mover.Destroy() //摧毁之前生成的实体
+}
+
+
+void function Drop_Spawnpoint( vector origin, int team, float impactTime )
+{
+	vector surfaceNormal = < 0, 0, 1 >
+
+	int index = GetParticleSystemIndex( $"P_ar_titan_droppoint" )
+
+	entity effectEnemy = StartParticleEffectInWorld_ReturnEntity( index, origin, surfaceNormal )
+	SetTeam( effectEnemy, team )
+	EffectSetControlPointVector( effectEnemy, 1, < 255, 64, 16 > )
+	effectEnemy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
+
+	wait impactTime
+
+	EffectStop( effectEnemy )
+}

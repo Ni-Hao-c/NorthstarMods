@@ -1,0 +1,465 @@
+untyped
+global function ApplyDropBattery
+global function DropBattery
+global function ApplyNukeTitan
+global function ApplyCruiseMissile
+global function ApplyVTOL
+global function ApplyNuclearBomb
+global function ApplyShieldBattery
+global function ApplyCJ
+
+global array<string> mweapon = [
+"mp_weapon_peacekraber",
+"mp_weapon_sniper",
+"mp_weapon_smart_pistol"
+"mp_titanweapon_flightcore_rockets"]
+
+global array<string> Qweapon = [
+ "burnmeter_smart_pistol"
+ "burnmeter_phase_rewind"
+ "burnmeter_emergency_battery"		
+ "burnmeter_holopilot_nova"	
+ "burnmeter_hard_cover"
+]
+
+
+void function ApplyDropBattery( entity player )
+{
+	if( !player.IsHuman() )
+		return ApplyFalied( player, "\n你需要处于铁驭状态才能扔出电池" )
+	if( !IsAlive( player ) )
+		return ApplyFalied( player, "\n死亡时不可丢出电池" )
+	if( !PlayerHasMaxBatteryCount( player ) )
+		return ApplyFalied( player, "\n你没有电池" )
+
+	DropBattery( player, true )
+}
+
+void function DropBattery( entity player, bool showTips = false )
+{
+	if( !player.IsHuman() || !IsAlive( player ) || !PlayerHasMaxBatteryCount( player ) )
+		return
+
+	entity battery = Rodeo_TakeBatteryAwayFromPilot( player )
+	vector viewVector = player.GetViewVector()
+	vector playerVel = player.GetVelocity()
+	vector batteryVel = playerVel + viewVector * 200 + < 0, 0, 100 >
+	battery.SetVelocity( batteryVel )
+	battery.s.touchEnabledTime <- Time() + 1
+
+	string text = "\n已丢出电池！"
+	if( showTips )
+		text += "\n你也可以在未打开GUI菜单时直接长按\n泰坦辅助技能键（默认为G）来快速丢弃电池"
+	if( battery.GetSkin() == 0 )
+		thread SendKsGUI_Threaded( player, text, < 100, 255, 100 >, 2, 1 )
+	if( battery.GetSkin() == 1 )
+		thread SendKsGUI_Threaded( player, text, < 255, 100, 100 >, 2, 1 )
+	if( battery.GetSkin() == 2 )
+		thread SendKsGUI_Threaded( player, text, < 255, 255, 100 >, 2, 1 )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_Menu_Store_Purchase_Success" )
+}
+
+void function ApplyNukeTitan( entity player )
+{
+	if( player.s.NukeTitan <= 0 )
+		return ApplyFalied( player, "\n你没有核武泰坦" )
+	if( !player.IsHuman() )
+		return ApplyFalied( player, "\n你需要处于铁驭状态才能交付核武泰坦" )
+
+	player.s.NukeTitan -= 1
+	PlayerInventory_GiveNukeTitan( player )
+	thread SendKsGUI_Threaded( player, "按住以持续交付核武泰坦\n成功交付了 1 个核武泰坦\n剩余 "+ player.s.NukeTitan +" 个核武泰坦未交付", < 100, 255, 100 >, 2, 1 )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_InGame_FD_ArmoryPurchase" )
+}
+
+void function ApplyCruiseMissile( entity player )
+{
+	if( player.s.CruiseMissile <= 0 )
+		return ApplyFalied( player, "\n你没有巡弋飞弹" )
+	if( !IsAlive( player ) )
+		return ApplyFalied( player, "\n在死亡时不可使用巡弋飞弹" )
+	if( !player.IsHuman() )
+		return ApplyFalied( player, "\n你需要处于铁驭状态才能使用巡弋飞弹" )
+	if( player.GetTitanSoulBeingRodeoed() )
+		return ApplyFalied( player, "\n在训牛时不可使用巡弋飞弹" )
+	if( player.GetParent() )
+		return ApplyFalied( player, "\n在有绑定的父级实体时不可使用巡弋飞弹" )
+	if( player.Anim_IsActive() )
+		return ApplyFalied( player, "\n在播放动画时不可使用巡弋飞弹" )
+	if( player.IsPhaseShifted() )
+		return ApplyFalied( player, "\n在相位空间内不可使用巡弋飞弹" )
+	if( !player.IsOnGround() || player.IsWallRunning() || player.IsWallHanging() )
+		return ApplyFalied( player, "\n你需要站在地上才能使用巡弋飞弹" )
+	if( player.GetOutOfBoundsDeadTime() >= Time() )
+		return ApplyFalied( player, "\n你需要返回战斗区域内才能使用巡弋飞弹" )
+	if( player.s.usingCruiseMissile )
+		return ApplyFalied( player, "\n你正在使用巡弋飞弹" )
+
+	player.s.CruiseMissile -= 1
+	thread CruiseMissileAnim_ThinkBefore( player )
+	thread SendKsGUI_Threaded( player, "\n", < 100, 255, 100 >, 0, 0 )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_InGame_FD_ArmoryPurchase" )
+}
+
+void function ApplyVTOL( entity player )
+{
+	if( !IsAlive( player ) )
+		return ApplyFalied( player, "\n死亡时不可使用VTOL" )
+	if( !player.IsHuman() )
+		return ApplyFalied( player, "\n你需要处于铁驭状态才能使用VTOL" )
+	if( player.GetTitanSoulBeingRodeoed() )
+		return ApplyFalied( player, "\n训牛时不可使用VTOL" )
+	if( player.GetParent() )
+		return ApplyFalied( player, "\n在有绑定的父级实体时不可使用VTOL" )
+	if( player.Anim_IsActive() )
+		return ApplyFalied( player, "\n在播放动画时不可使用巡弋飞弹" )
+	if( player.IsPhaseShifted() )
+		return ApplyFalied( player, "\n你需要离开相位才能使用VTOL" )
+	/*if( !player.IsOnGround() || player.IsWallRunning() || player.IsWallHanging() )
+		return ApplyFalied( player, "\n你需要站在地上才能使用VTOL" )
+	if( player.s.usingVTOL )
+		return ApplyFalied( player, "\n你正在使用VTOL" )
+	foreach( ent in GetPlayerArray() )
+		if( ent.s.usingVTOL )
+			return ApplyFalied( player, "\n场上已存在一个VTOL" )*/
+	
+	AddMoneyToPlayer( player, -500 )
+   	 thread ApplyCJ( player )
+
+	// int T = RandomInt( 2 )
+	//  switch (T) {
+    //     case 1:
+	// 		player.s.ATK_LEVEL += 0.25
+	// 		ApplyFalied( player, "\n攻击力增加" )
+	// 		break;
+	// 	case 0:
+	// 		player.s.HP_LEVEL += 1
+	// 		ApplyFalied( player, "\nHP增加" )
+	// 		entity titan = player.GetPetTitan()
+	// 		if(IsValid(titan) && !GetDoomedState(titan))
+	// 		{
+	// 		 titan.SetMaxHealth( titan.GetMaxHealth()+ 2500)
+	// 		 titan.SetHealth(titan.GetHealth() + 2500)
+	// 		}
+	// 		break;
+	// }
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_InGame_FD_ArmoryPurchase" )	
+	
+}
+
+void function ApplyNuclearBomb( entity player )
+{
+	if( !player.s.HaveNuclearBomb )
+		return ApplyFalied( player, "\n折叠时空武器离线" )
+	if( IsNuclearBombDisable() )
+		return ApplyFalied( player, "\n已有在途的折叠时空武器打击" )
+
+	thread NuclearBombAnimThink( player )
+	thread SendKsGUI_Threaded( player, "\n", < 100, 255, 100 >, 0, 0 )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_InGame_FD_ArmoryPurchase" )
+}
+
+void function ApplyShieldBattery( entity player )
+{
+	if( !player.IsHuman() )
+		return ApplyFalied( player, "\n你需要处于铁驭状态才能使用电池" )
+	if( !IsAlive( player ) )
+		return ApplyFalied( player, "\n死亡时不可使用电池" )
+	if( !PlayerHasMaxBatteryCount( player ) )
+		return ApplyFalied( player, "\n你没有电池" )
+	if( player.GetShieldHealth() == player.GetShieldHealthMax() )
+		return ApplyFalied( player, "\n护盾已满" )
+
+	thread UseShieldBattery( player )
+	thread SendKsGUI_Threaded( player, "\n", < 100, 255, 100 >, 0, 0 )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_InGame_FD_ArmoryPurchase" )
+}
+
+void function ApplyFalied( entity player, string text )
+{
+	thread SendKsGUI_Threaded( player, text, < 255, 100, 100 >, 2, 1 )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "menu_deny" )
+}
+
+
+void function ApplyCJ( entity player )//抽獎
+{
+    if(!IsValid ( player )  )
+		return
+	if( !IsAlive( player ) )
+		return ApplyFalied( player, "\n死亡时不可使用VTOL" )
+	if( !player.IsHuman() )
+		return ApplyFalied( player, "\n你需要处于铁驭状态才能使用VTOL" )
+	if( player.GetTitanSoulBeingRodeoed() )
+		return ApplyFalied( player, "\n训牛时不可使用VTOL" )
+	if( player.GetParent() )
+		return ApplyFalied( player, "\n在有绑定的父级实体时不可使用VTOL" )
+	if( player.Anim_IsActive() )
+		return ApplyFalied( player, "\n在播放动画时不可使用巡弋飞弹" )
+	if( player.IsPhaseShifted() )
+		return ApplyFalied( player, "\n你需要离开相位才能使用VTOL" )
+
+	AddMoneyToPlayer( player, -500 )
+
+    string a = "1"
+    int T = RandomInt( 10 )
+    switch (T) {
+        case 1:
+            player.s.CruiseMissile = RandomInt(3) + 1 + player.s.CruiseMissile
+            a = "你得到了飞弹"
+            break;
+        case 2:
+            player.s.NukeTitan += RandomInt(3)
+            a = "你得到了核武泰坦"
+            break;
+        // case 3:
+		// 		 SetTeam( player, TEAM_IMC )
+		// 		// player.SetOrigin(  spawnEvent.origin )
+        //         thread OnDeath( player )
+        //     a = "YOU ARE IMC"
+        //     break;
+        case 3:
+            array<entity> weapons = player.GetMainWeapons()
+            foreach( entity weapon in weapons )
+            {
+                player.TakeWeaponNow( weapon.GetWeaponClassName() )
+            }  
+            string b = mweapon[RandomInt( mweapon.len())] 
+            player.GiveWeapon( b, [ ]  )
+            player.SetActiveWeaponByName( b )      
+          a = "mweapon"
+         break;
+         case 4:
+                // if(IsValid ( player )  )
+                // {
+                //     player.SetPlayerNetInt( "numSuperRodeoGrenades", player.GetPlayerNetInt( "numSuperRodeoGrenades" ) + RandomInt(3) )
+                // }
+                string C = Qweapon[RandomInt( Qweapon.len())] 
+                RunBurnCardUseFunc( player, C )
+                a = "你的得到?"
+                break;
+         case 5:
+                    if(IsValid ( player )  )
+                    {
+                        if(IsAlive(player))
+                            player.Die()
+                    }
+                    a = "DIE"
+                    break;
+         case 6:
+            if( PlayerTurretCount( player) < 4)
+            {
+                BurnMeter_GiveRewardDirect( player, "burnmeter_at_turret_weapon_infinite" )
+                EmitSoundOnEntityOnlyToPlayer( player, player, "HUD_Boost_Card_Earned_1P" )
+            }
+            else
+            {
+                if(IsAlive(player))
+                 player.Die()
+                 a = "DIE"
+            }
+             break;
+         case 7:
+            array<entity> weapons = player.GetMainWeapons()
+            foreach ( entity weaponEnt in weapons )
+            {
+                if ( weaponEnt.GetWeaponInfoFileKeyField( "menu_category" ) != "pistol" )
+                    continue
+
+                player.TakeWeaponNow( weaponEnt.GetWeaponClassName() )
+                player.GiveWeapon( "mp_weapon_smart_pistol", ["og_pilot"] )
+                player.SetActiveWeaponByName( "mp_weapon_smart_pistol" )
+            }
+            a = "手槍"
+            break;
+        case 8:
+            //SpawnToneSniperTitan(player)
+            array<entity> weapons = player.GetMainWeapons()
+            foreach( entity weapon in weapons )
+            {
+                player.TakeWeaponNow( weapon.GetWeaponClassName() )
+            }
+            a = "你好"
+            break;
+        case 9:
+            if(IsAlive(player))
+                player.SetMaxHealth(GetPlayerMoney( player )+1)
+            a = "HP++"
+                break;
+         case 10:
+             player.SetPlayerSettingsWithMods( player.GetPlayerSettings(), [ "disable_wallrun", "disable_doublejump"])
+             a = "步槍兵+1"
+             break;
+        // case 10:
+        //      player.SetPlayerSettingsWithMods( player.GetPlayerSettings(), [ "disable_wallrun", "disable_doublejump"])
+        //      a = "步槍兵+1"
+        //      break;
+
+        default:
+            int money = -RandomInt( GetPlayerMoney( player ) +1) + RandomInt( 5000)
+            AddMoneyToPlayer( player, money )
+            a = "你得到了"+money+"金幣"
+            break;
+    }
+    thread NSSendInfoMessageToPlayer(player, a )
+    //thread SendKsGUI_Threaded( player, "\n"+a, < 100, 255, 100 >, 0, 0 )
+
+}
+
+
+int function PlayerTurretCount( entity ownerPlayer )
+{
+	int turrets = GetScriptManagedEntArrayLen( ownerPlayer.p.turretArrayId )
+	int burncards = PlayerInventory_CountTurrets( ownerPlayer )
+	ownerPlayer.SetPlayerNetInt( "burn_numTurrets", turrets + burncards )
+
+	return turrets + burncards
+}
+
+void function SpawnToneSniperTitan( entity ownerPlayer)
+{
+    vector spawnorigin
+    array<vector> pos = NavMesh_GetNeighborPositions( ownerPlayer.GetOrigin(), HULL_TITAN, 5 )
+    if (pos.len() < 1 )
+        { spawnorigin = ownerPlayer.GetOrigin()}
+    else
+        {spawnorigin = pos[0]}
+	entity npc = CreateNPCTitan( "titan_atlas", TEAM_MILITIA, spawnorigin, < 0, 0, 0> )
+	SetSpawnOption_Titanfall( npc )
+	npc.kv.AccuracyMultiplier = 23
+	npc.kv.reactChance = 60
+		SetSpawnOption_AISettings( npc, "npc_titan_atlas_tracker_fd_sniper_elite" )
+		SetTitanAsElite( npc )
+		SetSpawnOption_TitanSoulPassive4( npc, "pas_tone_sonar" )
+		SetSpawnOption_TitanSoulPassive5( npc, "pas_tone_wall" )
+		SetSpawnOption_TitanSoulPassive6( npc, "pas_tone_rockets" )
+	//SetTargetName( npc, GetTargetNameForID( spawnEvent.spawnType ) ) // required for client to create icons
+	DispatchSpawn( npc )
+		SetEliteTitanPostSpawn( npc )
+		npc.SetMaxHealth( npc.GetMaxHealth() + 7500 )
+		npc.SetHealth( npc.GetMaxHealth() )
+		npc.GetTitanSoul().soul.titanLoadout.titanExecution = "execution_tone_prime"
+
+		entity tonesonar = npc.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+		tonesonar.AddMod( "fd_sonar_duration" )
+		tonesonar.AddMod( "fd_sonar_damage_amp" )
+		npc.SetDangerousAreaReactionTime( 0 )
+		npc.DisableNPCFlag( NPC_ALLOW_INVESTIGATE )
+	npc.DisableNPCMoveFlag( NPCMF_WALK_NONCOMBAT )
+	npc.AssaultSetFightRadius( 0 )
+	//AddMinimapForTitans( npc )
+	npc.WaitSignal( "TitanHotDropComplete" )
+	npc.GetTitanSoul().SetTitanSoulNetBool( "showOverheadIcon", true )
+    // int followBehavior = GetDefaultNPCFollowBehavior( npc )
+	npc.SetOwner( ownerPlayer )
+	// npc.InitFollowBehavior( ownerPlayer, followBehavior )
+	// npc.EnableBehavior( "Follow" )
+    NPCFollowsPlayer( npc, ownerPlayer )
+
+}
+
+// void function SetTitanAsElite( entity npc )
+// {
+// 	if( GetGameState() != eGameState.Playing || !IsHarvesterAlive( fd_harvester.harvester ) )
+// 		return
+
+// 	Assert( IsValid( npc ) && npc.IsTitan(), "Entity is not a Titan to set as Elite: " + npc )
+// 	if ( npc.IsTitan() && elitesAllowed )
+// 	{
+// 		SetSpawnOption_NPCTitan( npc, TITAN_MERC )
+// 		SetSpawnOption_TitanSoulPassive1( npc, "pas_enhanced_titan_ai" )
+// 		SetSpawnOption_TitanSoulPassive2( npc, "pas_defensive_core" )
+// 		SetSpawnOption_TitanSoulPassive3( npc, "pas_assault_reactor" )
+// 		//SetSpawnflags( npc, SF_TITAN_SOUL_NO_DOOMED_EVASSIVE_COMBAT )
+// 	}
+// }
+
+// void function SetEliteTitanPostSpawn( entity npc )
+// {
+// 	if( GetGameState() != eGameState.Playing || !IsHarvesterAlive( fd_harvester.harvester ) )
+// 		return
+
+// 	Assert( IsValid( npc ) && npc.IsTitan(), "Entity is not a Titan to set as Elite: " + npc )
+// 	if ( npc.IsTitan() && elitesAllowed )
+// 	{
+// 		npc.EnableNPCFlag( NPC_NO_PAIN | NPC_NO_GESTURE_PAIN | NPC_NEW_ENEMY_FROM_SOUND ) //NPC_AIM_DIRECT_AT_ENEMY
+// 		npc.EnableNPCMoveFlag( NPCMF_PREFER_SPRINT )
+// 		npc.DisableNPCFlag( NPC_PAIN_IN_SCRIPTED_ANIM )
+// 		npc.DisableNPCMoveFlag( NPCMF_WALK_NONCOMBAT )
+// 		npc.SetCapabilityFlag( bits_CAP_NO_HIT_SQUADMATES, false )
+// 		npc.SetDefaultSchedule( "SCHED_ALERT_WALK" )
+// 		npc.kv.AccuracyMultiplier = 5.0
+// 		npc.kv.WeaponProficiency = eWeaponProficiency.PERFECT
+// 		//SetTitanWeaponSkin( npc )
+// 		HideCrit( npc )
+// 		npc.SetTitle( npc.GetSettingTitle() )
+// 		ShowName( npc )
+
+// 		entity soul = npc.GetTitanSoul()
+// 		if( IsValid( soul ) )
+// 		{
+// 			soul.SetPreventCrits( true )
+// 			soul.SetShieldHealthMax( 7500 )
+// 			soul.SetShieldHealth( 7500 )
+// 		}
+
+// 		thread MonitorEliteTitanCore( npc )
+// 	}
+// }
+
+// void function MonitorEliteTitanCore( entity npc )
+// {
+// 	Assert( IsValid( npc ) && npc.IsTitan(), "Entity is not a Titan to set as Elite: " + npc )
+// 	entity soul = npc.GetTitanSoul()
+// 	if ( !IsValid( soul ) )
+// 		return
+
+// 	soul.EndSignal( "OnDestroy" )
+// 	soul.EndSignal( "OnDeath" )
+
+// 	while( true )
+// 	{
+// 		SoulTitanCore_SetNextAvailableTime( soul, 1.0 )
+
+// 		npc.WaitSignal( "CoreBegin" )
+// 		wait 0.1
+
+// 		soul.SetShieldHealthMax( 7500 )
+// 		soul.SetShieldHealth( 7500 )
+// 	// entity meleeWeapon = npc.GetMeleeWeapon()
+// 	//if( meleeWeapon.HasMod( "super_charged" ) || meleeWeapon.HasMod( "super_charged_SP" ) ) //Hack for Elite Ronin
+// 		if(npc.GetModelName() == $"models/titans/light/titan_light_ronin_prime.mdl")
+// 			npc.SetAISettings( "npc_titan_stryder_leadwall_boss_fd_elite" )
+
+// 		npc.WaitSignal( "CoreEnd" )
+// 		switch ( difficultyLevel )
+// 		{
+// 			case eFDDifficultyLevel.EASY:
+// 			case eFDDifficultyLevel.NORMAL:
+// 			case eFDDifficultyLevel.HARD:
+// 				wait RandomFloatRange( 20.0, 40.0 )
+// 				break
+// 			case eFDDifficultyLevel.MASTER:
+// 			case eFDDifficultyLevel.INSANE:
+// 				wait RandomFloatRange( 40.0, 60.0 )
+// 				break
+// 		}
+// 	}
+// }
+
+
+void function OnDeath( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.WaitSignal( "OnDeath" )
+    if ( !IsValid( player ) )
+         return
+    SetTeam( player, TEAM_MILITIA )
+
+    wait 10
+    if ( !IsValid( player ) )
+         return
+    if ( player.GetTeam() == TEAM_IMC)
+       SetTeam( player, TEAM_MILITIA )
+
+}

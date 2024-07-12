@@ -1,0 +1,18 @@
+{
+	"Name": "Friendly Fire",
+	"Description": "Oh no :)",
+	"Version": "1.10.0",
+	"LoadPriority": 15,
+    "Scripts": [
+        {
+            "Path": "friendly_fire.nut",
+            "RunOn": "SERVER || CLIENT",
+			"ClientCallback": {
+				"Before": "Sh_FriendlyFire_Init"
+			},
+			"ServerCallback": {
+				"Before": "Sh_FriendlyFire_Init"
+			}
+        }
+    ]
+}

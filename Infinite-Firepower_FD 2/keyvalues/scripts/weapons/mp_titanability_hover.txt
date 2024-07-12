@@ -1,0 +1,40 @@
+WeaponData
+{
+	Mods
+	{
+		pas_defensive_core
+		{
+			"fire_rate"		"*1.25"
+		}
+
+		dev_mod_low_recharge
+		{
+			"fire_rate"		"*20"
+		}
+
+		burn_mod_titan_smoke
+		{
+			"fire_rate"   		"*1.25"
+
+			"is_burn_mod"		"1"
+		}
+		fastfill
+		{
+			"regen_ammo_refill_rate"						"*4"
+		}
+
+		tcp_super_hover
+		{
+			"fire_duration"   								"1.0"
+		}
+			unfastfill
+		{
+			"regen_ammo_refill_rate"						"/2"
+		}
+		jumphover
+		{
+			"fire_rate"		"*1.8"
+			"regen_ammo_refill_rate"						"*0.75"
+		}
+	}
+}

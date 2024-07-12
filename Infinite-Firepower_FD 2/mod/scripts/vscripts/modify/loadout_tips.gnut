@@ -1,0 +1,335 @@
+untyped
+global function TitanLoadoutTips_Init
+global function PilotLoadoutTips_Init
+
+void function TitanLoadoutTips_Init()
+{
+	AddSpawnCallback( "npc_titan", OnTitanfall )
+	AddCallback_OnClientConnected( OnClientConnected )
+}
+
+void function PilotLoadoutTips_Init()
+{
+	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
+	AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
+}
+
+void function OnClientConnected( entity player )
+{
+	player.s.lastTitanLoadout <- ""
+	player.s.lastPilotLoadout <- ""
+}
+
+void function OnTitanfall( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+	if( !IsValid( soul ) )
+		return
+	entity player = titan
+	if( !player.IsPlayer() )
+		player = GetPetTitanOwner( titan )
+	if( !IsValid( player ) )
+		return
+	string tips = "\n"
+	if( player.s.lastTitanLoadout == GetTitanName( titan ) )
+		return
+	player.s.lastTitanLoadout = GetTitanName( titan )
+	tips += "当前泰坦"
+	if( IsCustomTitan( titan ) )
+		tips += "被替换"
+	tips += "为: "+ GetTitanName( titan ) +"\n"
+
+	if( GetTitanName( titan ) == "遠征" )
+		tips += "关闭\"帝王边境\"皮肤"
+	else if( GetTitanName( titan ) == "神盾軍團帝王" )
+		tips += "关闭\"帝王堅韌黑\"皮肤"
+	else if( GetTitanName( titan ) == "神盾烈焰帝王" )
+		tips += "关闭\"帝王堅韌橘\"皮肤"
+	else if( GetTitanName( titan ) == "神盾浪人帝王" )
+		tips += "关闭\"帝王堅韌大海\"皮肤"
+	else if( GetTitanName( titan ) == "神盾强力帝王" )
+		tips += "关闭\"帝王堅韌蕨類\"皮肤"
+	else if( GetTitanName( titan ) == "神盾離子帝王" )
+		tips += "关闭\"帝王堅韌松針\"皮肤"
+	else if( GetTitanName( titan ) == "神盾爆發帝王" )
+		tips += "关闭\"帝王堅韌白\"皮肤"
+	else if( GetTitanName( titan ) == "神盾北極星帝王" )
+		tips += "关闭\"帝王堅韌陰影\"皮肤"
+	else if( GetTitanName( titan ) == "神盾野獸帝王" )
+		tips += "关闭\"帝王堅韌金\"皮肤"
+	else if( GetTitanName( titan ) == "神盾護盾帝王" )
+		tips += "关闭\"帝王堅韌紫\"皮肤"
+	else if( GetTitanName( titan ) == "帝王" )
+		tips += "携带\"帝王边境\"皮肤"
+	else if( IsCustomTitan( titan ) )
+		tips += "关闭至尊涂装"
+	else
+		tips += "携带至尊涂装"
+
+	tips += "以启用"
+	if( IsCustomTitan( titan ) )
+		tips += "原版泰坦"
+	else
+		tips += "客制化泰坦"
+	tips += ": "+ GetSwitchedTitan( titan )
+
+	SendHudMessageWithPriority( player, 91, tips, -1, 0.3, < 200, 200, 225 >, < 0.2, 5.0, 1.0 > )
+}
+
+string function GetTitanName( entity titan )
+{
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_ion_prime.mdl" )
+		return "執政官"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
+		return "堡壘"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_northstar_prime.mdl" )
+		return "野獸四號"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_ronin_prime.mdl" )
+		return "游俠"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_tone_prime.mdl" )
+		return "天圖"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
+		return "巨妖"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == -1 && titan.GetSkin() == 3 )
+		return "遠征"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 31 && titan.GetSkin() == 2 )
+		return "神盾爆發帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 30 && titan.GetSkin() == 2 )
+		return "神盾軍團帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 17 && titan.GetSkin() == 2 )
+		return "神盾烈焰帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 18 && titan.GetSkin() == 2 )
+		return "神盾浪人帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 15 && titan.GetSkin() == 2 )
+		return "神盾强力帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 14 && titan.GetSkin() == 2 )
+		return "神盾離子帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 19 && titan.GetSkin() == 2 )
+		return "神盾北極星帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 16 && titan.GetSkin() == 2 )
+		return "神盾野獸帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 83 && titan.GetSkin() == 2 )
+		return "神盾護盾帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_ajax.mdl" )
+		return "離子"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_ogre.mdl" )
+		return "烈焰"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_raptor.mdl" )
+		return "北極星"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_locust.mdl" )
+		return "浪人"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_wraith.mdl" )
+		return "強力"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_deadbolt.mdl" )
+		return "軍團"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && ( titan.GetCamo() != -1 || titan.GetSkin() != 3 ) )
+		return "帝王"
+	unreachable
+}
+
+bool function IsCustomTitan( entity titan )
+{
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_ion_prime.mdl" )
+		return true
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
+		return true
+	if( titan.GetModelName() == $"models/titans/light/titan_light_northstar_prime.mdl" )
+		return true
+	if( titan.GetModelName() == $"models/titans/light/titan_light_ronin_prime.mdl" )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_tone_prime.mdl" )
+		return true
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == -1 && titan.GetSkin() == 3 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 31 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 30 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 17 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 18 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 15 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 14 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 19 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 16 && titan.GetSkin() == 2 )
+		return true
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 83 && titan.GetSkin() == 2 )
+		return true
+	return false
+}
+
+string function GetSwitchedTitan( entity titan )
+{
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_ion_prime.mdl" )
+		return "離子"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_scorch_prime.mdl" )
+		return "烈焰"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_northstar_prime.mdl" )
+		return "北極星"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_ronin_prime.mdl" )
+		return "浪人"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_tone_prime.mdl" )
+		return "強力"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_legion_prime.mdl" )
+		return "軍團"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == -1 && titan.GetSkin() == 3 )
+		return "遠征"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_ajax.mdl" )
+		return "執政官"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_ogre.mdl" )
+		return "堡壘"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_raptor.mdl" )
+		return "野獸四號"
+	if( titan.GetModelName() == $"models/titans/light/titan_light_locust.mdl" )
+		return "游俠"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_wraith.mdl" )
+		return "天圖"
+	if( titan.GetModelName() == $"models/titans/heavy/titan_heavy_deadbolt.mdl" )
+		return "巨妖"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && ( titan.GetCamo() != -1 || titan.GetSkin() != 3 ) )
+		return "帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 30 && titan.GetSkin() == 2  )
+		return "神盾爆發帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 30 && titan.GetSkin() == 2  )
+		return "神盾軍團帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 17 && titan.GetSkin() == 2 ) 
+		return "神盾烈焰帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 18 && titan.GetSkin() == 2 ) 
+		return "神盾浪人帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 15 && titan.GetSkin() == 2 ) 
+		return "神盾强力帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 14 && titan.GetSkin() == 2 ) 
+		return "神盾離子帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 19 && titan.GetSkin() == 2 ) 
+		return "神盾北極星帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 16 && titan.GetSkin() == 2 ) 
+		return "神盾野獸帝王"
+	if( titan.GetModelName() == $"models/titans/medium/titan_medium_vanguard.mdl" && titan.GetCamo() == 83 && titan.GetSkin() == 2 ) 
+		return "神盾護盾帝王"
+	unreachable
+}
+
+void function OnPlayerRespawned( entity player )
+{
+	if( player.IsTitan() )
+		return
+	asset modelName = player.GetModelName()
+	string tips = "\n"
+	if( player.s.lastPilotLoadout == GetCustomPilotSkillName( modelName ) )
+		return
+	player.s.lastPilotLoadout = GetCustomPilotSkillName( modelName )
+	tips += "当前铁驭技能"
+	if( IsCustomPilotSkill( modelName ) )
+		tips += "被替换"
+	tips += "为: "+ GetCustomPilotSkillName( modelName ) +"\n"
+
+	if( IsCustomPilotSkill( modelName ) )
+		tips += "选用男性铁驭"
+	else
+		tips += "选用女性铁驭"
+
+	tips += "以启用"
+	if( IsCustomPilotSkill( modelName ) )
+		tips += "原版技能"
+	else
+		tips += "客制化技能"
+	tips += ": "+ GetSwitchedCustomPilotSkillName( modelName )
+
+	SendHudMessageWithPriority( player, 91, tips, -1, 0.3, < 200, 200, 225 >, < 0.2, 5.0, 1.0 > )
+}
+
+void function OnPlayerGetsNewPilotLoadout( entity player, PilotLoadoutDef loadout )
+{
+	return OnPlayerRespawned( player )
+}
+
+string function GetCustomPilotSkillName( asset modelName )
+{
+	if( modelName == $"models/humans/pilots/pilot_medium_geist_f.mdl" )
+		return "滑索枪"
+	if( modelName == $"models/humans/pilots/pilot_light_ged_f.mdl" )
+		return "传送门"
+	if( modelName == $"models/humans/pilots/pilot_heavy_drex_f.mdl" )
+		return "隐身力场"
+	if( modelName == $"models/humans/pilots/pilot_light_jester_f.mdl" )
+		return "破坏球"
+	if( modelName == $"models/humans/pilots/pilot_medium_reaper_f.mdl" )
+		return "重力电梯"
+	if( modelName == $"models/humans/pilots/pilot_medium_stalker_f.mdl" )
+		return "幻影转移"
+	if( modelName == $"models/humans/pilots/pilot_heavy_roog_f.mdl" )
+		return "烟雾陷阱"
+	if( modelName == $"models/humans/pilots/pilot_medium_geist_m.mdl" )
+		return "钩爪"
+	if( modelName == $"models/humans/pilots/pilot_light_ged_m.mdl" )
+		return "相位"
+	if( modelName == $"models/humans/pilots/pilot_heavy_drex_m.mdl" )
+		return "隐身"
+	if( modelName == $"models/humans/pilots/pilot_light_jester_m.mdl" )
+		return "激素"
+	if( modelName == $"models/humans/pilots/pilot_medium_reaper_m.mdl" )
+		return "脉冲刀"
+	if( modelName == $"models/humans/pilots/pilot_medium_stalker_m.mdl" )
+		return "幻影"
+	if( modelName == $"models/humans/pilots/pilot_heavy_roog_m.mdl" )
+		return "A盾"
+	unreachable
+}
+
+bool function IsCustomPilotSkill( asset modelName )
+{
+	if( modelName == $"models/humans/pilots/pilot_medium_geist_f.mdl" )
+		return true
+	if( modelName == $"models/humans/pilots/pilot_light_ged_f.mdl" )
+		return true
+	if( modelName == $"models/humans/pilots/pilot_heavy_drex_f.mdl" )
+		return true
+	if( modelName == $"models/humans/pilots/pilot_light_jester_f.mdl" )
+		return true
+	if( modelName == $"models/humans/pilots/pilot_medium_reaper_f.mdl" )
+		return true
+	if( modelName == $"models/humans/pilots/pilot_medium_stalker_f.mdl" )
+		return true
+	if( modelName == $"models/humans/pilots/pilot_heavy_roog_f.mdl" )
+		return true
+	return false
+}
+
+string function GetSwitchedCustomPilotSkillName( asset modelName )
+{
+	if( modelName == $"models/humans/pilots/pilot_medium_geist_f.mdl" )
+		return "钩爪"
+	if( modelName == $"models/humans/pilots/pilot_light_ged_f.mdl" )
+		return "相位"
+	if( modelName == $"models/humans/pilots/pilot_heavy_drex_f.mdl" )
+		return "隐身"
+	if( modelName == $"models/humans/pilots/pilot_light_jester_f.mdl" )
+		return "激素"
+	if( modelName == $"models/humans/pilots/pilot_medium_reaper_f.mdl" )
+		return "脉冲刀"
+	if( modelName == $"models/humans/pilots/pilot_medium_stalker_f.mdl" )
+		return "幻影"
+	if( modelName == $"models/humans/pilots/pilot_heavy_roog_f.mdl" )
+		return "A盾"
+	if( modelName == $"models/humans/pilots/pilot_medium_geist_m.mdl" )
+		return "滑索枪"
+	if( modelName == $"models/humans/pilots/pilot_light_ged_m.mdl" )
+		return "传送门"
+	if( modelName == $"models/humans/pilots/pilot_heavy_drex_m.mdl" )
+		return "隐身力场"
+	if( modelName == $"models/humans/pilots/pilot_light_jester_m.mdl" )
+		return "破坏球"
+	if( modelName == $"models/humans/pilots/pilot_medium_reaper_m.mdl" )
+		return "重力电梯"
+	if( modelName == $"models/humans/pilots/pilot_medium_stalker_m.mdl" )
+		return "幻影转移"
+	if( modelName == $"models/humans/pilots/pilot_heavy_roog_m.mdl" )
+		return "烟雾陷阱"
+	unreachable
+}

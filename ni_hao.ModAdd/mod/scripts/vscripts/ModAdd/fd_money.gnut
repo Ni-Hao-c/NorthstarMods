@@ -1,0 +1,531 @@
+untyped
+global function fd_money_Init
+global float fd_rateRaw = 0
+global function titanANDbatteryThink
+
+global vector FD_HarvesterBatteryPort = < 0, 0, 0 >
+global vector FD_HarvesterBatteryPortAngles = < 0, 0, 0 >
+
+void function fd_money_Init()
+{
+	PrecacheModel($"models/props/battery_port/battery_port_animated.mdl")
+	PrecacheModel($"models/props/turret_base/turret_base.mdl")
+	//AddSpawnCallback( "npc_gunship", OnGunshipSpawned )
+	PrecacheModel($"models/Robots/turret_rocket/turret_rocket.mdl")
+	
+	RegisterSignal( "GunshipJetBurstEffect" )
+
+	RegisterWeaponDamageSource( "mp_gunship_depth_charge", "深水炸彈" ) //在这里注册深水炸弹的伤害id，第二个参为击杀时会显示的文字，要求繁体
+
+
+	AddCallback_OnNPCKilled( OnNpcDeath )
+	AddCallback_OnTitanDoomed( addshieldHealth )
+	AddCallback_GameStateEnter( eGameState.Postmatch, RandomMap )
+	AddCallback_OnClientDisconnected( HarvesterHealth )
+	AddCallback_OnClientConnected( HarvesterHealth )
+	AddCallback_GameStateEnter( eGameState.Playing, HarvesterHealth2 )
+	AddCallback_OnClientConnected( setteam )
+	AddSpawnCallback( "npc_titan", byDifficulty )
+	AddDamageFinalCallback( "npc_titan", FD_DamageToPlayer )
+	AddCallback_GameStateEnter( eGameState.Playing, SpawnFD_battportpos )
+	AddCallback_NPCLeeched(leechedNPC)
+}
+void function FD_DamageToPlayer( entity victim, var damageInfo )
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	switch ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
+	{		
+			case eDamageSourceId.mp_titancore_amp_core :				
+			case eDamageSourceId.mp_titancore_emp : 					
+			case eDamageSourceId.mp_titancore_siege_mode :				
+			case eDamageSourceId.mp_titancore_flame_wave :				
+			case eDamageSourceId.mp_titancore_flame_wave_secondary :	
+			case eDamageSourceId.mp_titancore_nuke_core : 				
+			case eDamageSourceId.mp_titancore_nuke_missile :			
+			case eDamageSourceId.mp_titancore_shift_core :				
+			case eDamageSourceId.mp_titancore_amp_core:
+			case eDamageSourceId.mp_titancore_salvo_core:
+			case eDamageSourceId.mp_titancore_flame_wave:
+			case eDamageSourceId.mp_titanweapon_flightcore_rockets:
+			case eDamageSourceId.mp_titancore_laser_cannon:
+			case eDamageSourceId.mp_titancore_shift_core:
+			case eDamageSourceId.mp_titancore_siege_mode:
+				return
+	}
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	float damage = min( victim.GetHealth(), DamageInfo_GetDamage( damageInfo ) )
+
+	if(  attacker.IsPlayer() && victim.IsTitan())
+	{
+		int number = GetPlayerArrayOfTeam( TEAM_MILITIA ).len()
+		if(IsValid(fd_harvester.harvester) && IsAlive(fd_harvester.harvester))
+		{
+
+		Assert( TitanDamageRewardsTitanCoreTime() )
+
+		float rate = (fd_rateRaw * 0.01)
+		float credit = (rate * damage)
+		if ( credit > 0.0 )
+			AddCreditToTitanCoreBuilder( attacker, credit )
+		}
+	}
+}
+
+
+
+void function setteam(entity player)
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	SetTeam( player, TEAM_MILITIA )
+}
+
+void function HarvesterHealth2()
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	int number = GetPlayerArrayOfTeam( TEAM_MILITIA ).len()
+	if(IsValid(fd_harvester.harvester) && IsAlive(fd_harvester.harvester))
+	{
+
+
+	switch( number )
+	{
+		case 1:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 10000)
+			fd_rateRaw = 0.04
+			break
+		case 2:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 7000)
+			fd_rateRaw = 0.02
+			break
+		case 3:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 7000)
+			fd_rateRaw = 0.01
+			break
+		case 4:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 4000)
+			fd_rateRaw = 0.00
+			break
+		default:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 )+ 4000)
+			break
+	}
+	}
+
+	// if (  number == 1)
+	// {
+	// 	foreach ( npc in GetNPCArrayOfTeam( TEAM_IMC ) )
+	// 	{
+
+	// 		if (IsAlive( npc) && npc.IsTitan())
+	// 		{
+	// 			entity Soul = npc.GetTitanSoul()
+	// 			DisableOffhandWeapons(Soul)
+	// 		}
+	// 	}
+	// }
+
+	// if (  number != 1)
+	// {
+	// 	foreach ( npc in GetNPCArrayOfTeam( TEAM_IMC ) )
+	// 	{
+	// 		if (IsAlive( npc) && npc.IsTitan())
+	// 		{
+	// 			entity Soul = npc.GetTitanSoul()
+	// 			EnableOffhandWeapons(Soul)
+	// 		}
+
+
+	// 	}
+	// }
+
+
+
+
+}
+void function HarvesterHealth(entity player)
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	int number = GetPlayerArrayOfTeam( TEAM_MILITIA ).len()
+	if(IsValid(fd_harvester.harvester) && IsAlive(fd_harvester.harvester))
+	{
+
+
+	switch( number )
+	{
+		case 1:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 10000)
+			fd_rateRaw = 0.04
+			break
+		case 2:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 7000)
+			fd_rateRaw = 0.02
+			break
+		case 3:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 7000)
+			fd_rateRaw = 0.01
+			break
+		case 4:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 ) + 4000)
+			fd_rateRaw = 0.00
+			break
+		default:
+			fd_harvester.harvester.SetShieldHealthMax(GetCurrentPlaylistVarInt( "fd_harvester_shield", 6000 )+ 4000)
+			break
+	}
+	}
+
+	// if (  number == 1)
+	// {
+	// 	foreach ( npc in GetNPCArrayOfTeam( TEAM_IMC ) )
+	// 	{
+
+	// 		if (IsAlive( npc) && npc.IsTitan())
+	// 		{
+	// 			entity Soul = npc.GetTitanSoul()
+	// 			DisableOffhandWeapons(Soul)
+	// 		}
+	// 	}
+	// }
+
+	// if (  number != 1)
+	// {
+	// 	foreach ( npc in GetNPCArrayOfTeam( TEAM_IMC ) )
+	// 	{
+	// 		if (IsAlive( npc) && npc.IsTitan())
+	// 		{
+	// 			entity Soul = npc.GetTitanSoul()
+	// 			EnableOffhandWeapons(Soul)
+	// 		}
+
+
+	// 	}
+	// }
+
+
+
+
+}
+void function byDifficulty( entity ent )
+{
+	// if( GameRules_GetGameMode() != "fd" )
+	// 	return
+
+	// if ( ent.GetTeam() != TEAM_IMC )
+	// 	return
+
+
+	// if ( ent.IsTitan() && IsValid( GetPetTitanOwner( ent ) ) ) // in case we ever want pvp in FD
+	// 	return
+
+
+	// int number = GetPlayerArrayOfTeam( TEAM_MILITIA ).len()
+	// if ( ent.IsTitan() && ent.ai.bossTitanType == 0 && number == 1)
+	// {
+	// 	entity Soul = ent.GetTitanSoul()
+	// 	DisableOffhandWeapons(Soul)
+	// }
+
+
+}
+
+
+void function OnNpcDeath( entity victim, entity attacker, var damageInfo )
+{
+	if( GameRules_GetGameMode() == "fd" )
+	{
+
+	if( attacker.IsPlayer() && attacker.GetTeam() == TEAM_IMC ) //Give nothing for IMC players
+		return
+	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	string	damageID = GetObitFromDamageSourceID(damageSourceID)
+	int	money = 0
+	int findIndex = spawnedNPCs.find( victim )
+	switch ( victim.GetClassName() )
+		{
+			//mod
+			case "npc_marvin":
+			case "npc_prowler":
+					money = 300
+					break
+			// case "npc_soldier":
+			// case "npc_pilot_elite":
+			// 	AddPlayerScore( attacker, "FDGruntKilled" )
+			// 	attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, FD_SCORE_GRUNT )
+			// 	money = 5
+			// 	break
+			// case "npc_drone":
+			// 	if( !IsAttackDrone( victim ) ) //ignore worker drones
+			// 		break
+			// 	AddPlayerScore( attacker, "FDAirDroneKilled" )
+			// 	attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, FD_SCORE_AIR_DRONE )
+			// 	money = 10
+			// 	break
+			// case "npc_spectre":
+			// 	AddPlayerScore( attacker, "FDSpectreKilled" )
+			// 	attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, FD_SCORE_SPECTRE )
+			// 	money = 10
+			// 	break
+			// case "npc_stalker":
+			// 	AddPlayerScore( attacker, "FDStalkerKilled" )
+			// 	attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, FD_SCORE_STALKER )
+			// 	money = 15
+			// 	break
+			// case "npc_super_spectre":
+			// 	AddPlayerScore( attacker, "FDSuperSpectreKilled" )
+			// 	attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, FD_SCORE_SUPER_SPECTRE )
+			// 	money = 20
+			// 	break
+			 case "npc_titan":
+				if( damageID ==  "#DEATH_CORE_OVERLOAD" )
+					money = 30
+			// 	AddPlayerScore( attacker, "FDTitanKilled" )
+			// 	attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, FD_SCORE_TITAN )
+				break
+			 default:
+			 	money = 0
+		}
+		if ( money != 0 && IsValid( attacker ) && attacker.IsPlayer() )
+			AddMoneyToPlayer( attacker , money )
+
+		if ( findIndex != -1 )
+		{
+			spawnedNPCs.remove( findIndex )
+			string netIndex = GetAiNetIdFromTargetName( victim.GetTargetName() )
+			if( netIndex != "" )
+				SetGlobalNetInt( netIndex, GetGlobalNetInt( netIndex ) - 1 )
+
+			SetGlobalNetInt( "FD_AICount_Current", GetGlobalNetInt( "FD_AICount_Current" ) - 1 )
+		}
+		}
+	}
+
+
+string function GetAiNetIdFromTargetName( string targetName )
+{
+	switch ( targetName )
+	{
+		case "titan":
+		case "sniperTitan":
+		case "npc_titan_ogre_meteor_boss_fd":
+		case "npc_titan_ogre_meteor":
+		case "npc_titan_ogre_minigun_boss_fd":
+		case "npc_titan_ogre_minigun":
+		case "npc_titan_atlas_stickybomb_boss_fd":
+		case "npc_titan_atlas_stickybomb":
+		case "npc_titan_atlas_tracker_boss_fd":
+		case "npc_titan_atlas_tracker":
+		case "npc_titan_stryder_leadwall_boss_fd":
+		case "npc_titan_stryder_leadwall":
+		case "npc_titan_stryder_sniper_boss_fd":
+		case "npc_titan_stryder_sniper":
+		case "npc_titan_sniper":
+		case "npc_titan_sniper_tone":
+		case "npc_titan_atlas_vanguard_boss_fd":
+		case "npc_titan_atlas_vanguard":
+			return "FD_AICount_Titan"
+		case "empTitan":
+		case "npc_titan_arc":
+			return "FD_AICount_Titan_Arc"
+		case "mortarTitan":
+		case "npc_titan_mortar":
+			return "FD_AICount_Titan_Mortar"
+		case "nukeTitan":
+		case "npc_titan_nuke":
+			return "FD_AICount_Titan_Nuke"
+		case "npc_soldier":
+		case "grunt":
+			return "FD_AICount_Grunt"
+		case "spectre":
+			return "FD_AICount_Spectre"
+		case "mortar_spectre":
+			return "FD_AICount_Spectre_Mortar"
+		case "npc_stalker":
+		case "stalker":
+			return "FD_AICount_Stalker"
+		case "npc_super_spectre":
+		case "reaper":
+			return "FD_AICount_Reaper"
+		case "npc_drone":
+		case "drone":
+			return "FD_AICount_Drone"
+		case "cloakedDrone":
+		case "Cloak Drone":
+			return "FD_AICount_Drone_Cloak"
+		case "tick":
+			return "FD_AICount_Ticks"
+	}
+	printt( "unknown target name ", targetName )
+	return ""
+}
+
+
+void function addshieldHealth ( entity titan, var damageInfo ) //BIAOJI1
+{
+	if( GameRules_GetGameMode() != "fd")
+		return
+	if ( !IsAlive( titan )  )
+		return
+	if (titan.IsNPC())
+		return
+
+	entity Soul = titan.GetTitanSoul()
+	int Health = Soul.GetHealth()
+           	Soul.SetShieldHealthMax(7500)
+        	Soul.SetShieldHealth(7500)
+
+}
+
+void function RandomMap()
+{
+	wait ( GAME_POSTMATCH_LENGTH - 0.5 )
+
+	string GAMEMODE = "fd_master"
+	array<string> mapss = []
+	mapss.append("mp_grave")
+	mapss.append("mp_glitch")
+	mapss.append("mp_black_water_canal")
+	mapss.append("mp_thaw" )
+	mapss.append("mp_eden")
+	mapss.append("mp_complex3")
+	mapss.append("mp_forwardbase_kodai")
+	mapss.append("mp_rise")
+	mapss.append("mp_drydock")
+	mapss.append("mp_relic02")
+
+	string mapa=mapss[ RandomInt( mapss.len() ) ]
+	string mapaa = GetMapName()
+	if ( mapa  != mapaa )
+		GameRules_ChangeMap(  mapa	, GAMEMODE )
+	else
+		GameRules_ChangeMap(  "mp_homestead", GAMEMODE )
+}
+
+
+
+void function SpawnFD_battportpos(  )
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	if( FD_HarvesterBatteryPort == < 0 , 0 , 0>)
+		return
+
+	fix_SpawnFD_battportpos( FD_HarvesterBatteryPort ,  FD_HarvesterBatteryPortAngles)
+
+	
+
+}
+void function fix_SpawnFD_battportpos( vector  battportpos , vector battportangles )
+{
+
+	entity BatteryPort = CreatePropScript( $"models/props/battery_port/battery_port_animated.mdl", battportpos  + < 0, 0, 12 >, battportangles, 6 )
+	entity BatteryPortBase = CreatePropDynamicLightweight( $"models/props/turret_base/turret_base.mdl", battportpos, battportangles, 6 )
+	BatteryPort.SetTitle("维修采集机")
+	FD_BatteryPort( BatteryPort )
+	
+}
+
+
+void function FD_BatteryPort( entity batteryPort)
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	batteryPort.kv.fadedist = 16384
+	InitTurretBatteryPort( batteryPort )
+
+
+	SetTeam( batteryPort,  fd_harvester.harvester.GetTeam() )
+	batteryPort.s.relatedTurret <-  fd_harvester.harvester
+	batteryPort.s.isUsable <- FDBatteryPortUseCheck
+	batteryPort.s.useBattery <- FDUseBatteryFunc
+	batteryPort.s.hackAvaliable = false
+	batteryPort.SetUsableByGroup( "friendlies pilot" )
+}
+
+function FDBatteryPortUseCheck( batteryPortvar, playervar )
+{	
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	entity batteryPort = expect entity( batteryPortvar )
+	entity player = expect entity( playervar )
+	// entity  harvester = expect entity( batteryPort.s.relatedTurret )
+    if( !IsValid(  fd_harvester.harvester ) || !IsAlive( fd_harvester.harvester ))
+        return false
+
+    return ( PlayerHasBattery( player ) )
+}
+
+function FDUseBatteryFunc( batteryPortvar, playervar )
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	entity batteryPort = expect entity( batteryPortvar )
+	entity player = expect entity( playervar )
+	// entity fd_harvester.harvester = expect entity( batteryPort.s.relatedTurret )
+	// ||  fd_harvester.harvester.GetHealth() ==  fd_harvester.harvester.GetMaxHealth() 
+	if( !IsValid( player ) )
+		return
+	
+	if ( PlayerEarnMeter_Enabled() )
+		PlayerEarnMeter_SetOwnedFrac( player, clamp( PlayerEarnMeter_GetOwnedFrac( player ) + 0.5, 0.0, 1.0 ) )
+
+	AddPlayerScore( player, "FDRepairTurret")
+
+	if( IsAlive(  fd_harvester.harvester ))
+	{
+     fd_harvester.harvester.SetShieldHealth(  fd_harvester.harvester.GetShieldHealthMax() )
+	if(  fd_harvester.harvester.GetHealth() + 500 >  fd_harvester.harvester.GetMaxHealth())
+		 {
+			 fd_harvester.harvester.SetHealth(  fd_harvester.harvester.GetMaxHealth() )
+				foreach ( p in GetPlayerArray() )
+			{
+				int	money = RandomInt( 100)
+				AddMoneyToPlayer( p, money)
+			}
+
+		}
+	else
+		 fd_harvester.harvester.SetHealth(  fd_harvester.harvester.GetHealth() + 500 )
+	}
+
+}
+
+void function leechedNPC( entity npc , entity player)
+{
+	if( GameRules_GetGameMode() != "fd" )
+		return
+	npc.SetMaxHealth(500)
+	npc.SetHealth(500)
+	//npc.EnableBehavior( "assault" )
+	//AssaultOrigin(npc,fd_harvester.harvester.GetOrigin() )
+}
+
+
+void function titanANDbatteryThink( entity titan )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal("OnDestroy")
+	
+
+	wait 5
+
+	while ( true )
+	{
+	CreateBubbleShieldWithSettings( titan.GetTeam(), titan.GetOrigin(), titan.GetAngles(), null, 1 )
+	foreach ( entity battery in GetEntArrayByClass_Expensive( "item_titan_battery" ) )
+	{
+		if(!IsValid(battery.GetParent()))
+		{
+			if( Distance2D( titan.GetOrigin(), battery.GetOrigin() ) < TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE * 3)
+			battery.Destroy()
+		}
+		
+	}
+	wait 4
+	}
+
+}

@@ -1,0 +1,69 @@
+WeaponData
+{
+	Mods
+	{
+		arc_rounds
+		{
+		}
+
+		arc_rounds_with_battle_rifle
+		{
+		}
+		battle_rifle_icon
+		{
+		}
+
+		battle_rifle
+		{
+		}
+
+		rapid_reload
+		{
+		}
+		fd_vanguard_utility_1
+		{
+		}
+		fd_vanguard_utility_2
+		{
+		}
+		fd_vanguard_weapon_1
+		{
+		}
+		fd_vanguard_weapon_2
+		{
+		}
+		fd_balance
+		{
+		}
+		lessammo
+		{
+			"ammo_clip_size"   								"--20"
+
+		}
+		slowreload
+		{
+			"reload_time" 									"*2"
+			"reload_time_late1"								"*2"
+			"reload_time_late2"								"*2"
+			"reload_time_late3"								"*2"
+			"reloadempty_time"								"*2"
+			"reloadempty_time_late1"						"*2"
+			"reloadempty_time_late2"						"*2"
+		}
+
+		tcp_balance
+		{
+			"damage_near_value_titanarmor"					"100"
+			"damage_far_value_titanarmor" 					"80"
+		}
+                   amp_up{
+              
+                 "damage_near_distance"							"1500"
+	"damage_far_distance" 							"2000"
+	"damage_near_value"   							"60"
+	"damage_far_value"								"40"
+	"damage_near_value_titanarmor"					"120"
+	"damage_far_value_titanarmor" 					"120"
+}
+	}
+}

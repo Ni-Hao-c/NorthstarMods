@@ -1,0 +1,254 @@
+untyped
+
+global function NukeTitanThink
+
+global function AutoTitan_SelfDestruct
+
+const NUKE_TITAN_PLAYER_DETECT_RANGE 	= 500
+const NUKE_TITAN_RANGE_CHECK_SLEEP_SECS = 1.0
+
+void function AutoTitan_SelfDestruct( entity titan )
+{
+	if ( titan.ContextAction_IsBusy() )
+		titan.ContextAction_ClearBusy()
+
+	titan.SetNPCMoveSpeedScale( 0.01 )
+	titan.Anim_Stop()
+	thread TitanEjectPlayer( titan )
+}
+
+void function NukeTitanThink( entity titan, entity generator )
+{
+	//Function assumes that given Titan is spawned as npc_titan_ogre_meteor_nuke. Changing the Titan's AISettings post-spawn
+	//disrupts the Titan's titanfall animations and can result in the Titan landing outside the level.
+	NPC_SetNuclearPayload( titan )
+	AddEntityCallback_OnPostDamaged( titan, AutoTitan_NuclearPayload_PostDamageCallback )
+
+	WaitTillHotDropComplete( titan )
+
+	thread NukeTitanSeekOutGenerator( titan, generator )
+}
+
+
+void function NukeTitanSeekOutGenerator( entity titan, entity generator )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+	titan.EndSignal( "Doomed" )
+	// should fix crash with invalid generator?
+	generator.EndSignal( "OnDeath" )
+	generator.EndSignal( "OnDestroy" )
+
+	WaitSignal( titan, "FD_ReachedHarvester", "OnFailedToPath" )
+
+	float goalRadius = 100
+	float checkRadiusSqr = 400 * 400
+
+	//array<vector> pos = NavMesh_RandomPositions( generator.GetOrigin(), HULL_TITAN, 5, 250, 350 )
+	array<vector> pos = NavMesh_GetNeighborPositions( generator.GetOrigin(), HULL_TITAN, 5 )
+	pos = ArrayClosestVector( pos, titan.GetOrigin() )
+
+	array<vector> validPos
+	foreach ( point in pos )
+	{
+		if ( DistanceSqr( generator.GetOrigin(), point ) <= checkRadiusSqr && NavMesh_IsPosReachableForAI( titan, point ) )
+		{
+			validPos.append( point )
+			//DebugDrawSphere( point, 32, 255, 0, 0, true, 60 )
+		}
+	}
+
+	int posLen = validPos.len()
+	while( posLen >= 1 )
+	{
+		titan.SetEnemy( generator )
+		thread AssaultOrigin( titan, validPos[0], goalRadius )
+		titan.AssaultSetFightRadius( 0 ) // dont want to set a fight radius because then the nuke titan will stop and shoot
+
+		wait 0.5
+
+		if ( DistanceSqr( titan.GetOrigin(), generator.GetOrigin() ) > checkRadiusSqr )
+			continue
+
+		break
+	}
+
+	thread interchangePositions( titan  )
+	// wait 1
+	// thread AutoTitan_SelfDestruct( titan )
+}
+
+// intercept damage to nuke titans in damage callback so we can nuke them before death 100% of the time
+void function AutoTitan_NuclearPayload_PostDamageCallback( entity titan, var damageInfo )
+{
+	if ( !IsAlive( titan ) )
+		return
+
+	entity titanOwner = titan.GetBossPlayer()
+	if ( IsValid( titanOwner ) )
+	{
+		Assert( titanOwner.IsPlayer() )
+		Assert( GetPlayerTitanInMap( titanOwner ) == titan )
+		return
+	}
+
+	int nuclearPayload = NPC_GetNuclearPayload( titan )
+	if ( nuclearPayload == 0 )
+		return
+
+	if ( !GetDoomedState( titan ) )
+		return
+
+	if ( titan.GetTitanSoul().IsEjecting() )
+		return
+
+	// Nuke eject as soon as the titan enters doom state.
+	if ( !( "doomedStateNukeTriggerHealth" in titan.s ) )
+	{
+		titan.s.doomedStateNukeTriggerHealth <- titan.GetMaxHealth()
+	}
+
+	if ( titan.GetHealth() > titan.s.doomedStateNukeTriggerHealth )
+	{
+		//printt( "titan health:", titan.GetHealth(), "health to nuke:", titan.s.doomedStateNukeTriggerHealth )
+		return
+	}
+	
+	printt( "NUKE TITAN DOOMED TRIGGER HEALTH REACHED, NUKING! Health:", titan.s.doomedStateNukeTriggerHealth )
+	thread interchangePositions( titan  )
+}
+
+function AutoTitan_CanDoRangeCheck( autoTitan )
+{
+	if ( !( "nextPlayerTitanRangeCheckTime" in autoTitan.s ) )
+		autoTitan.s.nextPlayerTitanRangeCheckTime <- -1
+
+	if ( Time() < autoTitan.s.nextPlayerTitanRangeCheckTime )
+	{
+		return false
+	}
+	else
+	{
+		autoTitan.s.nextPlayerTitanRangeCheckTime = Time() + NUKE_TITAN_RANGE_CHECK_SLEEP_SECS
+		return true
+	}
+}
+
+
+
+bool function IsEliteTitan( entity titan )
+{
+	if ( titan.GetTeam() != TEAM_IMC )
+		return false
+
+	switch ( titan.ai.bossTitanType )
+	{
+		case TITAN_MERC:
+		case TITAN_BOSS:
+			return true
+	}
+
+	return false
+}
+
+function interchangePositions( entity titan  )
+{
+	if( GameRules_GetGameMode() != "fd" )
+	{thread AutoTitan_SelfDestruct( titan )
+		return
+	}
+	
+	if( !IsEliteTitan(titan))
+		{thread AutoTitan_SelfDestruct( titan )
+			return
+		}
+	//wait 0.2
+
+	vector origin1 = titan.GetOrigin()
+	vector Angle1  = titan.GetAngles()
+	
+	// vector origin2 = titan2.GetOrigin()
+	// vector Angle2  = titan2.GetAngles()
+	thread AutoTitan_SelfDestruct( titan )
+	wait 4
+
+	entity titan2 = compareTitan( origin1 )
+	if( !IsValid( titan2 ))
+	{
+		FD_GenericNPCDeath(origin1)
+		return
+
+	}
+
+	//thread PhaseShift(titan , 0.1, 0.5)
+	thread PhaseShift(titan2 , 0.5 , 1)
+	wait 0.5
+	titan2.SetOrigin(origin1)
+	titan2.SetAngles( Angle1 )
+	//titan.SetOrigin(origin2)
+	//titan.SetAngles(Angle2)
+
+	
+}
+
+entity function compareTitan( vector origin1)
+{
+	// titan.EndSignal( "OnDestroy" )
+	// //titan.EndSignal( "Doomed" )
+	// // should fix crash with invalid generator?
+	// fd_harvester.harvester.EndSignal( "OnDeath" )
+	// fd_harvester.harvester.EndSignal( "OnDestroy" )
+	entity titan2 
+	array<entity> titans 
+	foreach( entity t in GetNPCArrayByClass( "npc_titan" ) )
+	{
+		if ( IsAlive(t)  && t.GetTeam() != TEAM_MILITIA &&  !IsMortarTitan( t )) 
+		titans.append(t)
+	}
+
+	if( titans.len() == 0)
+		return titan2 
+
+	
+	float distance =  0
+	foreach( entity t in titans  )
+	{
+		if( !IsValid(  t ))
+		{
+		
+			continue
+	
+		}
+			if( distance < DistanceSqr( t.GetOrigin(), fd_harvester.harvester.GetOrigin()) )
+			{
+				distance = DistanceSqr( t.GetOrigin(), fd_harvester.harvester.GetOrigin())
+				titan2 = t
+			}
+	}
+
+		return titan2
+
+}
+
+void function FD_GenericNPCDeath( vector origin)
+{
+	array<entity> ts = GetNearbyEnemiesForGravGrenade( origin )
+		foreach( t in ts)
+		thread PhaseShift( t , 0.5 , 3)
+}
+
+array<entity> function GetNearbyEnemiesForGravGrenade( vector origin )
+{
+	int team = TEAM_IMC
+	array<entity> nearbyEnemies
+	array<entity> guys = GetPlayerArrayEx( "any", TEAM_ANY, TEAM_ANY, origin, 2000 )
+	foreach ( guy in guys )
+	{
+		if ( !IsAlive( guy ) )
+			continue
+		if ( IsEnemyTeam( team, guy.GetTeam() ) )
+			nearbyEnemies.append( guy )
+	}
+
+	return nearbyEnemies
+}

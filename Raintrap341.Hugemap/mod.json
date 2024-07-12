@@ -1,0 +1,16 @@
+{
+	"Name": "Raintrap341.Hugemap",
+	"Description": "Press M",
+	"LoadPriority": 4,
+	"RequiredOnClient": false,
+	"Version": "1.0.0",
+	"Scripts": [
+		{
+			"Path": "mp_hugemap.nut",
+			"RunOn": "CLIENT && MP",
+			"ClientCallback": {
+				"After": "HugemapInit"
+			}
+		}
+	]
+}

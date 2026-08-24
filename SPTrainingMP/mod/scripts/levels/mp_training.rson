@@ -1,0 +1,13 @@
+IsTestMap: false
+
+When: "SERVER"
+Scripts:
+[
+	mp/levels/mp_training.nut
+]
+
+When: "CLIENT"
+Scripts:
+[
+	mp/levels/cl_mp_training.nut
+]

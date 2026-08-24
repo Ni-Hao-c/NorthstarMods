@@ -1,0 +1,8 @@
+global function NSUICodeCallback_ConnectionStopped
+
+// Ion's native connection layer emits this callback. Northstar.Client 1.18
+// predates the connection-modal implementation, so acknowledging it here keeps
+// the UI VM compatible while the existing 1.18 error dialog handles failures.
+void function NSUICodeCallback_ConnectionStopped( string error )
+{
+}

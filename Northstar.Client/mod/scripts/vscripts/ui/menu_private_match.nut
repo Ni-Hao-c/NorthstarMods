@@ -41,6 +41,8 @@ struct
 	var titanButton
 	var boostsButton
 	var storeButton
+	var storeNewReleasesButton
+	var storeBundlesButton
 	var factionButton
 	var bannerButton
 	var patchButton
@@ -63,11 +65,10 @@ struct
 
 	var matchSettingsPanel
 
-	ComboStruct &lobbyComboStruct
+	ComboStruct& lobbyComboStruct
 } file
 
-const table<asset> mapImages =
-{
+const table<asset> mapImages = {
 	mp_forwardbase_kodai = $"loadscreens/mp_forwardbase_kodai_lobby",
 	mp_grave = $"loadscreens/mp_grave_lobby",
 	mp_homestead = $"loadscreens/mp_homestead_lobby",
@@ -91,7 +92,7 @@ const table<asset> mapImages =
 	mp_rise = $"loadscreens/mp_rise_lobby",
 	mp_lf_township = $"loadscreens/mp_lf_township_lobby",
 	mp_lf_uma = $"loadscreens/mp_lf_uma_lobby",
-	
+
 	// not really sure if this should be here, whatever
 	// might be good to make this modular in the future?
 	sp_training = $"rui/menu/level_select/level_image1",
@@ -143,13 +144,12 @@ void function MenuPrivateMatch_Init()
 asset function GetMapImageForMapName( string mapName )
 {
 	if ( mapName in mapImages )
-		return mapImages[mapName]
-		
+		return mapImages[ mapName ]
+
 	// no way to convert string => asset for dynamic stuff so
 	// pain
-	return expect asset ( compilestring( "return $\"loadscreens/" + mapName + "_lobby\"" )() )
+	return expect asset( compilestring( "return $\"loadscreens/" + mapName + "_lobby\"" )() )
 }
-
 
 void function InitPrivateMatchMenu()
 {
@@ -180,10 +180,10 @@ void function InitPrivateMatchMenu()
 	file.friendlyTeamBackgroundPanel = Hud_GetChild( file.friendlyPlayersPanel, "LobbyFriendlyTeamBackground" )
 	file.enemyTeamBackgroundPanel = Hud_GetChild( file.enemyPlayersPanel, "LobbyEnemyTeamBackground" )
 
-#if PC_PROG
-	var panelSize = Hud_GetSize( file.enemyPlayersPanel )
-	Hud_SetSize( Hud_GetChild( menu, "LobbyChatBox" ), panelSize[0], panelSize[1] )
-#endif // #if PC_PROG
+	#if PC_PROG
+		var panelSize = Hud_GetSize( file.enemyPlayersPanel )
+		Hud_SetSize( Hud_GetChild( menu, "LobbyChatBox" ), panelSize[ 0 ], panelSize[ 1 ] )
+	#endif // #if PC_PROG
 
 	file.friendlyTeamBackground = Hud_GetChild( file.friendlyTeamBackgroundPanel, "TeamBackground" )
 	file.enemyTeamBackground = Hud_GetChild( file.enemyTeamBackgroundPanel, "TeamBackground" )
@@ -204,10 +204,20 @@ void function InitPrivateMatchMenu()
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT", "" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-
+	AddMenuFooterOption( menu, BUTTON_X, PrependControllerPrompts( BUTTON_X, "#MENU_TITLE_MODS" ), "#MENU_TITLE_MODS", OpenModsMenu )
 	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_SWITCH_TEAMS", "#SWITCH_TEAMS", PCSwitchTeamsButton_Activate, CanSwitchTeams )
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#SHOW_JOIN_INFO", "#SHOW_JOIN_INFO", ShowJoinInfoButton_Activate, IsEOSP2PEnabledAndAvailable )
 	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_MUTE", "#MOUSE2_MUTE", null, CanMute )
-	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#RB_TRIGGER_TOGGLE_SPECTATE", "#SPECTATE_TEAM", PCToggleSpectateButton_Activate, CanSwitchTeams )
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#BUTTON_VIEW_PLAYER_PROFILE", "#MOUSE1_VIEW_PROFILE", null, CanMuteOnVanilla )
+	AddMenuFooterOption(
+		menu,
+		BUTTON_SHOULDER_RIGHT,
+		"#RB_TRIGGER_TOGGLE_SPECTATE",
+		"#SPECTATE_TEAM",
+		PCToggleSpectateButton_Activate,
+		CanSwitchTeamsToggleSpec,
+		UpdateSpectatorButton
+	)
 
 	AddMenuVarChangeHandler( "focus", UpdateFooterOptions )
 	AddMenuVarChangeHandler( "isFullyConnected", UpdateFooterOptions )
@@ -225,6 +235,10 @@ void function InitPrivateMatchMenu()
 	#endif
 }
 
+void function OpenModsMenu( var button )
+{
+	AdvanceMenu( GetMenu( "ModListMenu" ) )
+}
 
 void function OnSelectMapButton_Activate( var button )
 {
@@ -247,13 +261,16 @@ void function OnSelectMatchSettings_Activate( var button )
 	if ( Hud_IsLocked( button ) )
 		return
 
-	if ( !IsNorthstarServer() )
+	if ( NSIsVanilla() )
 		AdvanceMenu( GetMenu( "MatchSettingsMenu" ) )
 	else
-		AdvanceMenu( GetMenu( "CustomMatchSettingsCategoryMenu" ) )
+	{
+		SetNextMatchSettingsCategory( "" )
+		AdvanceMenu( GetMenu( "CustomMatchSettingsMenu" ) )
+	}
 }
 
-void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
+void function SetupComboButtons( var menu, var navUpButton, var navDownButton )
 {
 	ComboStruct comboStruct = ComboButtons_Create( menu )
 	file.lobbyComboStruct = comboStruct
@@ -274,12 +291,9 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	file.matchSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_MATCH_SETTINGS" )
 	Hud_AddEventHandler( file.matchSettingsButton, UIE_CLICK, OnSelectMatchSettings_Activate )
 
-	if ( !IsNorthstarServer() )
-	{
-		var friendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
-		file.inviteFriendsButton = friendsButton
-		Hud_AddEventHandler( friendsButton, UIE_CLICK, InviteFriendsIfAllowed )
-	}
+	var friendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
+	file.inviteFriendsButton = friendsButton
+	Hud_AddEventHandler( friendsButton, UIE_CLICK, InviteFriendsIfAllowed )
 
 	headerIndex++
 	buttonIndex = 0
@@ -316,10 +330,10 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	file.storeHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_STORE" )
 	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_BROWSE" )
 	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
-	var storeNewReleasesButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_NEW_RELEASES" )
-	Hud_AddEventHandler( storeNewReleasesButton, UIE_CLICK, OnStoreNewReleasesButton_Activate )
-	var storeBundlesButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_BUNDLES" )
-	Hud_AddEventHandler( storeBundlesButton, UIE_CLICK, OnStoreBundlesButton_Activate )
+	file.storeNewReleasesButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_NEW_RELEASES" )
+	Hud_AddEventHandler( file.storeNewReleasesButton, UIE_CLICK, OnStoreNewReleasesButton_Activate )
+	file.storeBundlesButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_BUNDLES" )
+	Hud_AddEventHandler( file.storeBundlesButton, UIE_CLICK, OnStoreBundlesButton_Activate )
 
 	headerIndex++
 	buttonIndex = 0
@@ -335,24 +349,108 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 		var soundButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
 		Hud_AddEventHandler( soundButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
-	var knbButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
-	Hud_AddEventHandler( knbButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
 	ComboButtons_Finalize( comboStruct )
 }
 
+bool function IsEOSP2PEnabledAndAvailable()
+{
+	return ( GetConVarInt( "ns_has_agreed_allow_eos" ) == NS_AGREED_TO_SEND_TOKEN ) && !NSIsVanilla() && NSIsListenServer() && !IsControllerModeActive()
+}
 
 bool function IsPlayerListFocused()
 {
 	var focusedItem = GetFocus()
 
 	// The check for GetScriptID existing isn't ideal, but if the text chat text output element has focus it will script error otherwise
-	return ( (focusedItem != null) && ("GetScriptID" in focusedItem) && (Hud_GetScriptID( focusedItem ) == "PlayerListButton") )
+	return ( ( focusedItem != null ) && ( "GetScriptID" in focusedItem ) && ( Hud_GetScriptID( focusedItem ) == "PlayerListButton" ) )
 }
 
 bool function MatchResultsExist()
 {
 	return true // TODO
+}
+
+// AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#RB_TRIGGER_TOGGLE_SPECTATE", "#SPECTATE_TEAM",
+// PCToggleSpectateButton_Activate, CanSwitchTeamsToggleSpec, UpdateSpectatorButton )
+
+void function ShowJoinInfoButton_Activate( var button )
+{
+	if ( Hud_IsLocked( button ) )
+		return
+
+	string addressFormatted = "[" + NSGetLocalP2PEndpointAddress() + "]" + ":" + NSGetLocalP2PEndpointPort()
+
+	DialogData dialogData
+	dialogData.header = "#DIALOG_TITLE_SHOW_JOIN_INFO"
+	dialogData.message = Localize( "#DIALOG_MESSAGE_SHOW_JOIN_INFO", addressFormatted )
+	AddDialogButton( dialogData, "#COPY_CLIPBOARD", CopyJoinInfoToClipboard )
+	AddDialogButton( dialogData, "#BACK" )
+
+	OpenDialog( dialogData )
+}
+
+void function CopyJoinInfoToClipboard()
+{
+	string joinInfo = "[" + NSGetLocalP2PEndpointAddress() + "]" + ":" + NSGetLocalP2PEndpointPort()
+	NSCopyToClipboard( joinInfo )
+}
+
+void function UpdateSpectatorButton( InputDef data )
+{
+	EndSignal( uiGlobal.signalDummy, "EndFooterUpdateFuncs" )
+
+	int index = int( Hud_GetScriptID( data.vguiElem ) )
+	bool isSpectator
+
+	while ( data.conditionCheckFunc() )
+	{
+		isSpectator = ( IsPrivateMatch() || GetConVarBool( "ns_allow_spectators" ) ) && GetPersistentVarAsInt( "privateMatchState" ) == 1
+
+		if ( isSpectator )
+		{
+			if ( IsControllerModeActive() )
+				SetFooterText( file.menu, index, "#RB_TRIGGER_SPECTATE_ENABLED" )
+			else
+				SetFooterText( file.menu, index, "#SPECTATE_ENABLED" )
+		}
+		else
+		{
+			if ( IsControllerModeActive() )
+				SetFooterText( file.menu, index, "#RB_TRIGGER_SPECTATE_DISABLED" )
+			else
+				SetFooterText( file.menu, index, "#SPECTATE_DISABLED" )
+		}
+
+		WaitFrame()
+	}
+}
+
+bool function CanSwitchTeamsToggleSpec()
+{
+	if ( CanMute() )
+		return false
+
+	int myTeam = GetTeam()
+	int otherTeam
+
+	if ( myTeam == TEAM_IMC )
+		otherTeam = TEAM_MILITIA
+	else if ( myTeam == TEAM_MILITIA )
+		otherTeam = TEAM_IMC
+	else
+		return false
+
+	int myTeamSize = GetTeamSize( myTeam )
+	int otherTeamSize = GetTeamSize( otherTeam )
+
+	if ( otherTeamSize + myTeamSize <= 1 )
+		return false
+
+	if ( !NSIsVanilla() && !GetConVarBool( "ns_allow_spectators" ) )
+		return false
+
+	return CanSwitchTeams()
 }
 
 bool function CanSwitchTeams()
@@ -363,6 +461,16 @@ bool function CanSwitchTeams()
 bool function CanMute()
 {
 	return IsPlayerListFocused()
+}
+
+bool function CanMuteOnVanilla()
+{
+	return IsPlayerListFocused() && NSIsVanilla()
+}
+
+bool function NotCanMute()
+{
+	return !CanMute()
 }
 
 void function OnLobbyMenu_Open()
@@ -398,7 +506,7 @@ void function OnLobbyMenu_Open()
 			bool anyNewTitanItems = HasAnyNewTitanItems( player )
 			bool anyNewBoosts = HasAnyNewBoosts( player )
 			bool anyNewCommsIcons = false // emotesAreEnabled ? HasAnyNewDpadCommsIcons( player ) : false
-			bool anyNewCustomizeHeader = (anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons)
+			bool anyNewCustomizeHeader = ( anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons )
 
 			RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", anyNewCustomizeHeader )
 			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
@@ -429,7 +537,7 @@ void function OnLobbyMenu_Open()
 			bool anyNewBanners = HasAnyNewCallsignBanners( player )
 			bool anyNewPatches = HasAnyNewCallsignPatches( player )
 			bool anyNewFactions = HasAnyNewFactions( player )
-			bool anyNewCallsignHeader = (anyNewBanners || anyNewPatches || anyNewFactions)
+			bool anyNewCallsignHeader = ( anyNewBanners || anyNewPatches || anyNewFactions )
 
 			RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", anyNewCallsignHeader )
 			ComboButton_SetNew( file.bannerButton, anyNewBanners )
@@ -448,8 +556,6 @@ void function LobbyMenuUpdate( var menu )
 		WaitFrame()
 	}
 }
-
-
 
 void function OnLobbyMenu_Close()
 {
@@ -552,7 +658,6 @@ function Privatematch_mode_Changed()
 	UpdateMatchSettingsForGamemode()
 }
 
-
 function Privatematch_starting_Changed()
 {
 	if ( !IsPrivateMatch() )
@@ -564,10 +669,11 @@ function Privatematch_starting_Changed()
 	UpdateFooterOptions()
 }
 
-
 function UpdatePrivateMatchButtons()
 {
 	var menu = file.menu
+
+	UpdateStoreButtons()
 
 	if ( level.ui.privatematch_starting == ePrivateMatchStartState.STARTING )
 	{
@@ -575,17 +681,14 @@ function UpdatePrivateMatchButtons()
 		Hud_SetLocked( file.selectMapButton, true )
 		Hud_SetLocked( file.selectModeButton, true )
 		Hud_SetLocked( file.matchSettingsButton, true )
-		
-		if ( !IsNorthstarServer() )
-			Hud_SetLocked( file.inviteFriendsButton, true )
+		Hud_SetLocked( file.inviteFriendsButton, true )
 	}
 	else
 	{
 		RHud_SetText( file.startMatchButton, "#START_MATCH" )
 		Hud_SetLocked( file.selectMapButton, false )
 		Hud_SetLocked( file.selectModeButton, false )
-		if ( !IsNorthstarServer() )
-			Hud_SetLocked( file.inviteFriendsButton, false )
+		Hud_SetLocked( file.inviteFriendsButton, false )
 
 		string modeName = PrivateMatch_GetSelectedMode()
 		bool settingsLocked = IsFDMode( modeName )
@@ -594,6 +697,25 @@ function UpdatePrivateMatchButtons()
 			CloseActiveMenu()
 
 		Hud_SetLocked( file.matchSettingsButton, settingsLocked )
+	}
+
+	if ( !NSIsVanilla() )
+		Hud_SetLocked( file.inviteFriendsButton, true )
+}
+
+function UpdateStoreButtons()
+{
+	if ( NSIsVanilla() )
+	{
+		Hud_SetLocked( file.storeButton, false )
+		Hud_SetLocked( file.storeNewReleasesButton, false )
+		Hud_SetLocked( file.storeBundlesButton, false )
+	}
+	else
+	{
+		Hud_SetLocked( file.storeButton, true )
+		Hud_SetLocked( file.storeNewReleasesButton, true )
+		Hud_SetLocked( file.storeBundlesButton, true )
 	}
 }
 
@@ -640,25 +762,25 @@ function UpdateLobby()
 		int numPlaylistOverrides = GetPlaylistVarOverridesCount()
 		string playlistOverridesDesc = ""
 		for ( int varIdx = 0; varIdx < numPlaylistOverrides; ++varIdx )
-		{	
+		{
 			// temp fix for playlistoverrides that aren't handled by private match
 			string varName = GetPlaylistVarOverrideNameByIndex( varIdx )
-			
+
 			if ( varName in MatchSettings_PlaylistVarLabels )
 			{
 				float varOrigVal = float( GetCurrentPlaylistGamemodeByIndexVar( gamemodeIdx, varName, false ) )
 				float varOverrideVal = float( GetCurrentPlaylistGamemodeByIndexVar( gamemodeIdx, varName, true ) )
-				if ( varOrigVal == varOverrideVal && !IsNorthstarServer() ) // stuff seems to break outside of northstar servers since we dont always use private_match playlist
+				if ( varOrigVal == varOverrideVal ) // stuff seems to break outside of northstar servers since we dont always use private_match playlist
 					continue
-	
-				string label = Localize( MatchSettings_PlaylistVarLabels[varName] ) + ": "
+
+				string label = Localize( MatchSettings_PlaylistVarLabels[ varName ] ) + ": "
 				string value = MatchSettings_FormatPlaylistVarValue( varName, varOverrideVal )
 				playlistOverridesDesc = playlistOverridesDesc + label + "`2" + value + " `0\n"
 			}
 			else
 			{
 				bool shouldBreak = false
-				
+
 				foreach ( string category in GetPrivateMatchSettingCategories( true ) )
 				{
 					foreach ( CustomMatchSettingContainer setting in GetPrivateMatchCustomSettingsForCategory( category ) )
@@ -666,15 +788,17 @@ function UpdateLobby()
 						if ( setting.playlistVar == varName )
 						{
 							if ( setting.isEnumSetting )
-								playlistOverridesDesc += Localize( setting.localizedName ) + ": `2" + Localize( setting.enumNames[ setting.enumValues.find( expect string ( GetCurrentPlaylistVar( varName ) ) ) ] ) + "`0\n"
+								playlistOverridesDesc +=
+									Localize( setting.localizedName ) + ": `2" +
+										Localize( setting.enumNames[ setting.enumValues.find( expect string( GetCurrentPlaylistVar( varName ) ) ) ] ) + "`0\n"
 							else
 								playlistOverridesDesc += Localize( setting.localizedName ) + ": `2" + GetCurrentPlaylistVar( varName ) + "`0\n"
-							
+
 							shouldBreak = true
 							break
 						}
 					}
-					
+
 					if ( shouldBreak )
 						break
 				}
@@ -708,7 +832,6 @@ void function OnSettingsButton_Activate( var button )
 	AdvanceMenu( GetMenu( "MatchSettingsMenu" ) )
 }
 
-
 void function OnPrivateMatchButton_Activate( var button )
 {
 	ShowPrivateMatchConnectDialog()
@@ -730,27 +853,27 @@ function HandleLockedCustomMenuItem( menu, button, tipInfo, hideTip = false )
 
 	if ( Hud_IsLocked( button ) && !hideTip )
 	{
-		foreach( elem in elements )
+		foreach ( elem in elements )
 			Hud_Hide( elem )
 
 		local tipArray = clone tipInfo
 		tipInfo.resize( 6, null )
 
-		Hud_SetText( toolTipLabel, tipInfo[0], tipInfo[1], tipInfo[2], tipInfo[3], tipInfo[4], tipInfo[5] )
+		Hud_SetText( toolTipLabel, tipInfo[ 0 ], tipInfo[ 1 ], tipInfo[ 2 ], tipInfo[ 3 ], tipInfo[ 4 ], tipInfo[ 5 ] )
 
 		local buttonPos = button.GetAbsPos()
 		local buttonHeight = button.GetHeight()
 		local tooltipHeight = buttonTooltip.GetHeight()
 		local yOffset = ( tooltipHeight - buttonHeight ) / 2.0
 
-		buttonTooltip.SetPos( buttonPos[0] + button.GetWidth() * 0.9, buttonPos[1] - yOffset )
+		buttonTooltip.SetPos( buttonPos[ 0 ] + button.GetWidth() * 0.9, buttonPos[ 1 ] - yOffset )
 		Hud_Show( buttonTooltip )
 
 		return true
 	}
 	else
 	{
-		foreach( elem in elements )
+		foreach ( elem in elements )
 			Hud_Show( elem )
 		Hud_Hide( buttonTooltip )
 	}
@@ -795,7 +918,6 @@ void function MatchmakingSetSearchText( string searchText, var param1 = "", var 
 	}
 }
 
-
 void function MatchmakingSetCountdownTimer( float time )
 {
 	foreach ( element in file.matchStatusRuis )
@@ -805,13 +927,11 @@ void function MatchmakingSetCountdownTimer( float time )
 	}
 }
 
-
 void function OnPrivateLobbyLevelInit()
 {
 	UpdateCallsignElement( file.callsignCard )
 	RefreshCreditsAvailable()
 }
-
 
 function UpdatePlayerInfo()
 {
@@ -830,6 +950,7 @@ function UpdatePlayerInfo()
 
 void function OnPrivateMatchMenu_Open()
 {
+	ClientCommand( "loadPlaylists" ) // reload playlists so the modes menu has the all the stuff to lock
 	Lobby_SetFDMode( false )
 	OnLobbyMenu_Open()
 }

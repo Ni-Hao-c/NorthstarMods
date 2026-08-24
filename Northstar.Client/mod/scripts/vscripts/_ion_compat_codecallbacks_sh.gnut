@@ -1,0 +1,7 @@
+global function CInputSystem__ProcessPostEvent
+
+// Ion forwards input-system events to script. Northstar.Client 1.18 does not
+// consume them, but the callback must exist in both UI and CLIENT VMs.
+void function CInputSystem__ProcessPostEvent( int nType, int nTick, int nData, int nData2, int nData3 )
+{
+}

@@ -1,6 +1,5 @@
 untyped
 
-
 global function MenuLobby_Init
 
 global function InitLobbyMenu
@@ -16,12 +15,13 @@ global function Lobby_UpdateInboxButtons
 global function GetTimeToRestartMatchMaking
 
 global function RefreshCreditsAvailable
+global function SetUIPlayerCreditsInfo
+global function GetUICreditsAvailableElems
 
 global function InviteFriendsIfAllowed
 global function SetPutPlayerInMatchmakingAfterDelay
 
 global function DLCStoreShouldBeMarkedAsNew
-global function StartNSPrivateMatch
 
 global function SetNextAutoMatchmakingPlaylist
 global function GetNextAutoMatchmakingPlaylist
@@ -42,11 +42,14 @@ global function OnStoreButton_Activate
 global function OnStoreBundlesButton_Activate
 global function OnStoreNewReleasesButton_Activate
 
+global function CreatePartyAndInviteFriends
+
 const string MATCHMAKING_AUDIO_CONNECTING = "menu_campaignsummary_titanunlocked"
 
 struct
 {
-	struct {
+	struct
+	{
 		string playlistName = ""
 		int mapIdx = -1
 		int modeIdx = -1
@@ -67,17 +70,19 @@ struct
 	var inviteFriendsButton
 	var inviteFriendsToNetworkButton
 	var toggleMenuModeButton
-	var customButton
+	var customButton // for handling our custom buttons!
 
 	var networksMoreButton
 
 	int inboxHeaderIndex
 	var inboxButton
+	var switchButton
 
 	int customizeHeaderIndex
 	var pilotButton
 	var titanButton
 	var boostsButton
+	var progressionButton
 	var storeButton
 	var storeNewReleasesButton
 	var storeBundlesButton
@@ -96,6 +101,7 @@ struct
 
 	array<var> lobbyButtons
 	var playHeader
+	var nsHeader
 	var customizeHeader
 	var callsignHeader
 
@@ -111,10 +117,11 @@ struct
 	int etaMaxMinutes = 15
 	string lastMixtapeMatchmakingStatus
 
-	ComboStruct &lobbyComboStruct
+	ComboStruct& lobbyComboStruct
 
 	bool isFDMode = false
 	bool shouldAutoOpenFDMenu = false
+	string oldCommunitiesHostname
 } file
 
 void function MenuLobby_Init()
@@ -128,15 +135,14 @@ void function MenuLobby_Init()
 	AddUICallback_OnLevelInit( OnLobbyLevelInit )
 }
 
-
 bool function ChatroomIsVisibleAndFocused()
 {
-	return Hud_IsVisible( file.chatroomMenu ) && Hud_IsFocused( file.chatroomMenu_chatroomWidget );
+	return Hud_IsVisible( file.chatroomMenu ) && Hud_IsFocused( file.chatroomMenu_chatroomWidget )
 }
 
 bool function ChatroomIsVisibleAndNotFocused()
 {
-	return Hud_IsVisible( file.chatroomMenu ) && !Hud_IsFocused( file.chatroomMenu_chatroomWidget );
+	return Hud_IsVisible( file.chatroomMenu ) && !Hud_IsFocused( file.chatroomMenu_chatroomWidget )
 }
 
 void function Lobby_UpdateInboxButtons()
@@ -145,7 +151,7 @@ void function Lobby_UpdateInboxButtons()
 	if ( GetUIPlayer() == null || !IsPersistenceAvailable() )
 		return
 
-	bool hasNewMail = (Inbox_HasUnreadMessages() && Inbox_GetTotalMessageCount() > 0) || PlayerRandomUnlock_GetTotal( GetUIPlayer() ) > 0
+	bool hasNewMail = ( Inbox_HasUnreadMessages() && Inbox_GetTotalMessageCount() > 0 ) || PlayerRandomUnlock_GetTotal( GetUIPlayer() ) > 0
 	if ( hasNewMail )
 	{
 		int messageCount = Inbox_GetTotalMessageCount()
@@ -158,12 +164,12 @@ void function Lobby_UpdateInboxButtons()
 		else
 			countString = string( totalCount )
 
-		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_NETWORKS_NEW_MSGS", countString )  )
+		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_NETWORKS_NEW_MSGS", countString ) )
 		ComboButton_SetText( file.inboxButton, Localize( "#MENU_TITLE_INBOX_NEW_MSGS", countString ) )
 	}
 	else
 	{
-		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_NETWORKS" )  )
+		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_NETWORKS" ) )
 		ComboButton_SetText( file.inboxButton, Localize( "#MENU_TITLE_READ" ) )
 	}
 
@@ -178,9 +184,10 @@ void function InitLobbyMenu()
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT", "", null, ChatroomIsVisibleAndNotFocused )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
+	AddMenuFooterOption( menu, BUTTON_X, PrependControllerPrompts( BUTTON_X, "#MENU_TITLE_MODS" ), "#MENU_TITLE_MODS", OpenModsMenu )
 	AddMenuFooterOption( menu, BUTTON_BACK, "#BACK_BUTTON_POSTGAME_REPORT", "#POSTGAME_REPORT", OpenPostGameMenu, IsPostGameMenuValid )
 	AddMenuFooterOption( menu, BUTTON_TRIGGER_RIGHT, "#R_TRIGGER_CHAT", "", null, IsVoiceChatPushToTalk )
-
+	// AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, PrependControllerPrompts(BUTTON_SHOULDER_RIGHT, "sans"), "sans", OpenSans )
 	InitChatroom( menu )
 
 	file.chatroomMenu = Hud_GetChild( menu, "ChatRoomPanel" )
@@ -228,6 +235,16 @@ void function InitLobbyMenu()
 	RegisterSignal( "LeaveParty" )
 }
 
+void function OpenSans( var button )
+{
+	LaunchExternalWebBrowser( "https://jcw87.github.io/c2-sans-fight/", WEBBROWSER_FLAG_MUTEGAME )
+}
+
+void function OpenModsMenu( var button )
+{
+	AdvanceMenu( GetMenu( "ModListMenu" ) )
+}
+
 void function SetupComboButtonTest( var menu )
 {
 	ComboStruct comboStruct = ComboButtons_Create( menu )
@@ -236,56 +253,42 @@ void function SetupComboButtonTest( var menu )
 	int headerIndex = 0
 	int buttonIndex = 0
 	file.playHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_PLAY" )
-	
-	bool isModded = IsNorthstarServer()
-	
-	
-	// this will be the server browser
-	if ( isModded )
-	{
-		file.findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_SERVER_BROWSER" )
-		file.lobbyButtons.append( file.findGameButton )
-		Hud_SetLocked( file.findGameButton, true )
-		Hud_AddEventHandler( file.findGameButton, UIE_CLICK, OpenServerBrowser )
-	}
-	else
-	{
-		file.findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FIND_GAME" )
-		file.lobbyButtons.append( file.findGameButton )
-		Hud_AddEventHandler( file.findGameButton, UIE_CLICK, BigPlayButton1_Activate )
-	}
 
-	// this is used for launching private matches now
-	if ( isModded )
-	{
-		file.inviteRoomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FIND_GAME" )
-		Hud_AddEventHandler( file.inviteRoomButton, UIE_CLICK, BigPlayButton1_Activate )
-	}
-	else
-	{
-		file.inviteRoomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_ROOM" )
-		Hud_AddEventHandler( file.inviteRoomButton, UIE_CLICK, DoRoomInviteIfAllowed )	
-	}
+	// vanilla
 
-	if ( isModded )
-	{
-		file.customButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "設置戰隊標籤" )
-		file.lobbyButtons.append( file.customButton )
-		Hud_AddEventHandler( file.customButton, UIE_CLICK, OnCustomClantagButton_Activate )
-	}
-	
-	
-	file.inviteFriendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
+	file.findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FIND_GAME" )
+	file.lobbyButtons.append( file.findGameButton )
+	Hud_AddEventHandler( file.findGameButton, UIE_CLICK, BigPlayButton1_Activate )
+
+	file.inviteRoomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_ROOM" )
+	Hud_AddEventHandler( file.inviteRoomButton, UIE_CLICK, DoRoomInviteIfAllowed )
+
+	string friendsText = "#MENU_TITLE_INVITE_FRIENDS"
+	if ( NSGetFriendSubscriptionMap().len() > 0 && !( GetPartySize() > 1 ) )
+		friendsText = Localize( "#MENU_TITLE_COMBO_FRIENDS", NSGetFriendSubscriptionMap().len() )
+	file.inviteFriendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, friendsText )
+
+	// clantag
+	file.customButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_SETUP_CLANTAG" )
+	file.lobbyButtons.append( file.customButton )
+	Hud_AddEventHandler( file.customButton, UIE_CLICK, OnCustomClantagButton_Activate )
 	Hud_AddEventHandler( file.inviteFriendsButton, UIE_CLICK, InviteFriendsIfAllowed )
 
-	if ( isModded )
-	{
-		Hud_SetEnabled( file.inviteFriendsButton, false )
-		Hud_SetVisible( file.inviteFriendsButton, false )
-	}
+	// server browser
+	// file.serverBrowserButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_SERVER_BROWSER" )
+	// file.lobbyButtons.append( file.serverBrowserButton )
+	// Hud_SetLocked( file.serverBrowserButton, true )
+	// Hud_AddEventHandler( file.serverBrowserButton, UIE_CLICK, OpenServerBrowser )
 
-	//file.toggleMenuModeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LOBBY_SWITCH_FD" )
-	//Hud_AddEventHandler( file.toggleMenuModeButton, UIE_CLICK, ToggleLobbyMode )
+	// private match
+	// file.privateMatchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#PRIVATE_MATCH" )
+	// Hud_AddEventHandler( file.privateMatchButton, UIE_CLICK, StartPrivateMatch )
+
+	// Hud_SetEnabled( file.inviteFriendsButton, false )
+	// Hud_SetVisible( file.inviteFriendsButton, false )
+
+	// file.toggleMenuModeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LOBBY_SWITCH_FD" )
+	// Hud_AddEventHandler( file.toggleMenuModeButton, UIE_CLICK, ToggleLobbyMode )
 
 	headerIndex++
 	buttonIndex = 0
@@ -300,6 +303,8 @@ void function SetupComboButtonTest( var menu )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
+	// file.progressionButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#TOGGLE_PROGRESSION" )
+	// Hud_AddEventHandler( file.progressionButton, UIE_CLICK, ShowToggleProgressionDialog )
 
 	headerIndex++
 	buttonIndex = 0
@@ -323,17 +328,18 @@ void function SetupComboButtonTest( var menu )
 	var networksInbox = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INBOX" )
 	file.inboxButton = networksInbox
 	file.lobbyButtons.append( networksInbox )
-	Hud_AddEventHandler( networksInbox, UIE_CLICK, OnInboxButton_Activate )
+	Hud_AddEventHandler( networksInbox, UIE_CLICK, _OnInboxButton_Activate )
 	var switchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_SWITCHCOMMUNITY" )
-	Hud_AddEventHandler( switchButton, UIE_CLICK, OnSwitchButton_Activate )
+	file.switchButton = switchButton
+	Hud_AddEventHandler( switchButton, UIE_CLICK, _OnSwitchButton_Activate )
 	var browseButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_BROWSE_NETWORKS" )
 	file.lobbyButtons.append( browseButton )
-	Hud_AddEventHandler( browseButton, UIE_CLICK, OnBrowseNetworksButton_Activate )
+	Hud_AddEventHandler( browseButton, UIE_CLICK, _OnBrowseNetworksButton_Activate )
 	file.browseNetworkButton = browseButton
 	#if NETWORK_INVITE
 		file.inviteFriendsToNetworkButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#INVITE_FRIENDS" )
 		file.lobbyButtons.append( file.inviteFriendsToNetworkButton )
-		Hud_AddEventHandler( file.inviteFriendsToNetworkButton, UIE_CLICK, OnInviteFriendsToNetworkButton_Activate )
+		Hud_AddEventHandler( file.inviteFriendsToNetworkButton, UIE_CLICK, _OnInviteFriendsToNetworkButton_Activate )
 	#endif
 
 	headerIndex++
@@ -362,11 +368,9 @@ void function SetupComboButtonTest( var menu )
 		var soundButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
 		Hud_AddEventHandler( soundButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
-	//file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
-	//Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
-	// MOD SETTINGS
-	var modSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MOD_SETTINGS" )
-	Hud_AddEventHandler( modSettingsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ModSettings" ) ) )
+
+	file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
+	Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
 	comboStruct.navUpButtonDisabled = true
 	comboStruct.navDownButton = file.genUpButton
@@ -374,19 +378,49 @@ void function SetupComboButtonTest( var menu )
 	ComboButtons_Finalize( comboStruct )
 }
 
+void function _OnInviteFriendsToNetworkButton_Activate( var button )
+{
+	if ( Hud_IsLocked( button ) )
+		return
+
+	OnInviteFriendsToNetworkButton_Activate( button )
+}
+
+void function _OnInboxButton_Activate( var button )
+{
+	if ( Hud_IsLocked( button ) )
+		return
+
+	OnInboxButton_Activate( button )
+}
+
+void function _OnSwitchButton_Activate( var button )
+{
+	if ( Hud_IsLocked( button ) )
+		return
+
+	OnSwitchButton_Activate( button )
+}
+
+void function _OnBrowseNetworksButton_Activate( var button )
+{
+	if ( Hud_IsLocked( button ) )
+		return
+
+	OnBrowseNetworksButton_Activate( button )
+}
+
 bool function MatchResultsExist()
 {
 	return true // TODO
 }
 
-void function StartNSPrivateMatch( var button )
+void function StartPrivateMatch( var button )
 {
 	if ( Hud_IsLocked( button ) )
 		return
 
 	ClientCommand( "StartPrivateMatchSearch" )
-	NSSetLoading(true)
-	NSUpdateListenServer()
 }
 
 void function DoRoomInviteIfAllowed( var button )
@@ -394,27 +428,32 @@ void function DoRoomInviteIfAllowed( var button )
 	if ( Hud_IsLocked( button ) )
 		return
 
-	if ( !DoesCurrentCommunitySupportInvites() )
+	if ( !NSIsVanilla() )
+		StartPrivateMatch( button )
+	else
 	{
-		OnBrowseNetworksButton_Activate( button )
-		return
+		if ( !DoesCurrentCommunitySupportInvites() )
+		{
+			OnBrowseNetworksButton_Activate( button )
+			return
+		}
+
+		entity player = GetUIPlayer()
+
+		if ( IsValid( player ) && Player_NextAvailableMatchmakingTime( player ) > 0 )
+		{
+			DisplayMatchmakingPenaltyDialog( player )
+			return
+		}
+
+		SendOpenInvite( true )
+		OpenSelectedPlaylistMenu()
 	}
-
-	entity player = GetUIPlayer()
-
-	if ( IsValid( player ) && Player_NextAvailableMatchmakingTime( player ) > 0 )
-	{
-		DisplayMatchmakingPenaltyDialog( player )
-		return
-	}
-
-	SendOpenInvite( true )
-	OpenSelectedPlaylistMenu()
 }
 
 void function DisplayMatchmakingPenaltyDialog( entity player )
 {
-	int minutesRemaining = int( ceil( Player_GetRemainingMatchmakingDelay( player ) / 60) )
+	int minutesRemaining = int( ceil( Player_GetRemainingMatchmakingDelay( player ) / 60 ) )
 	if ( minutesRemaining <= 1 )
 		ServerCallback_GenericDialog( 30, 31, true )
 	else if ( minutesRemaining == 2 )
@@ -442,7 +481,7 @@ void function CreatePartyAndInviteFriends()
 	}
 	else
 	{
-		printt( "Not inviting friends - CanInvite() returned false" );
+		printt( "Not inviting friends - CanInvite() returned false" )
 	}
 }
 
@@ -483,6 +522,12 @@ void function InviteFriendsIfAllowed( var button )
 		return
 	}
 
+	if ( NSGetFriendSubscriptionMap().len() > 0 && !( GetPartySize() > 1 ) )
+	{
+		AdvanceMenu( GetMenu( "FriendslistMenu" ) )
+		return
+	}
+
 	#if PC_PROG
 		if ( !Origin_IsOverlayAvailable() )
 		{
@@ -499,12 +544,17 @@ bool function CanInvite()
 	if ( Player_NextAvailableMatchmakingTime( GetUIPlayer() ) > 0 )
 		return false
 
-#if DURANGO_PROG
-		return ( GetMenuVarBool( "isFullyConnected" ) && GetMenuVarBool( "DURANGO_canInviteFriends" ) && GetMenuVarBool( "DURANGO_isJoinable" ) && GetMenuVarBool( "DURANGO_isGameFullyInstalled" ) )
+	#if DURANGO_PROG
+		return (
+			GetMenuVarBool( "isFullyConnected" ) && GetMenuVarBool( "DURANGO_canInviteFriends" ) && GetMenuVarBool( "DURANGO_isJoinable" ) &&
+				GetMenuVarBool( "DURANGO_isGameFullyInstalled" )
+		)
 	#elseif PS4_PROG
 		return GetMenuVarBool( "PS4_canInviteFriends" )
 	#elseif PC_PROG
-		return ( GetMenuVarBool( "isFullyConnected" ) && GetMenuVarBool( "ORIGIN_isEnabled" ) && GetMenuVarBool( "ORIGIN_isJoinable" ) && Origin_IsOverlayAvailable() )
+		return (
+			GetMenuVarBool( "isFullyConnected" ) && GetMenuVarBool( "ORIGIN_isEnabled" ) && GetMenuVarBool( "ORIGIN_isJoinable" ) && Origin_IsOverlayAvailable()
+		)
 	#endif
 }
 
@@ -562,11 +612,15 @@ void function OnLobbyMenu_Open()
 	// code will start loading DLC info from first party unless already done
 	InitDLCStore()
 
+	DoNSButtonState()
+
+	NSMarkClearPlaylistOverrides()
+
 	thread UpdateCachedNewItems()
 	if ( file.putPlayerInMatchmakingAfterDelay )
 	{
 		entity player = GetUIPlayer()
-		if (IsValid( player ))
+		if ( IsValid( player ) )
 		{
 			string playlistToSearch = expect string( player.GetPersistentVar( "lastPlaylist" ) )
 			string nextAutoPlaylist = GetNextAutoMatchmakingPlaylist()
@@ -595,7 +649,7 @@ void function OnLobbyMenu_Open()
 		if ( !IsValid( player ) )
 			return
 
-		while ( IsPersistenceAvailable() && (player.GetPersistentVarAsInt( "initializedVersion" ) < PERSISTENCE_INIT_VERSION) )
+		while ( IsPersistenceAvailable() && ( player.GetPersistentVarAsInt( "initializedVersion" ) < PERSISTENCE_INIT_VERSION ) )
 		{
 			WaitFrame()
 		}
@@ -622,7 +676,7 @@ void function OnLobbyMenu_Open()
 			bool anyNewTitanItems = HasAnyNewTitanItems( player )
 			bool anyNewBoosts = HasAnyNewBoosts( player )
 			bool anyNewCommsIcons = emotesAreEnabled ? HasAnyNewDpadCommsIcons( player ) : false
-			bool anyNewCustomizeHeader = (anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons)
+			bool anyNewCustomizeHeader = ( anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons )
 
 			RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", anyNewCustomizeHeader )
 			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
@@ -642,7 +696,7 @@ void function OnLobbyMenu_Open()
 			bool anyNewBanners = HasAnyNewCallsignBanners( player )
 			bool anyNewPatches = HasAnyNewCallsignPatches( player )
 			bool anyNewFactions = HasAnyNewFactions( player ) && Lobby_IsFDMode()
-			bool anyNewCallsignHeader = (anyNewBanners || anyNewPatches || anyNewFactions)
+			bool anyNewCallsignHeader = ( anyNewBanners || anyNewPatches || anyNewFactions )
 
 			RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", anyNewCallsignHeader )
 			ComboButton_SetNew( file.bannerButton, anyNewBanners )
@@ -650,9 +704,9 @@ void function OnLobbyMenu_Open()
 			ComboButton_SetNew( file.factionButton, anyNewFactions )
 		}
 
-		/*bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes() || HaveNewCommunityNotes()
+		bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes() || HaveNewCommunityNotes()
 		RuiSetBool( Hud_GetRui( file.settingsHeader ), "isNew", faqIsNew )
-		ComboButton_SetNew( file.faqButton, faqIsNew )*/
+		ComboButton_SetNew( file.faqButton, faqIsNew )
 
 		TryUnlockSRSCallsign()
 
@@ -667,6 +721,49 @@ void function OnLobbyMenu_Open()
 	}
 }
 
+void function DoNSButtonState()
+{
+	if ( NSIsVanilla() )
+	{
+		ComboButton_SetText( file.findGameButton, "#MENU_TITLE_FIND_GAME" )
+		ComboButton_SetText( file.inviteRoomButton, "#MENU_TITLE_INVITE_ROOM" )
+
+		string friendsText = "#MENU_TITLE_INVITE_FRIENDS"
+		if ( NSGetFriendSubscriptionMap().len() > 0 && !( GetPartySize() > 1 ) )
+			friendsText = Localize( "#MENU_TITLE_COMBO_FRIENDS", NSGetFriendSubscriptionMap().len() )
+
+		ComboButton_SetText( file.inviteFriendsButton, friendsText )
+		Hud_SetVisible( file.inviteFriendsButton, true )
+
+		Hud_SetLocked( file.inboxButton, false )
+		Hud_SetLocked( file.browseNetworkButton, false )
+		Hud_SetLocked( file.switchButton, false )
+		Hud_SetLocked( file.inviteFriendsToNetworkButton, false )
+
+		Hud_SetLocked( file.storeButton, false )
+		Hud_SetLocked( file.storeNewReleasesButton, false )
+		Hud_SetLocked( file.storeBundlesButton, false )
+	}
+	else
+	{
+		ClientCommand( "loadPlaylists" ) // reload playlists only on northstar so server-browser works
+
+		ComboButton_SetText( file.findGameButton, "#MENU_TITLE_SERVER_BROWSER" )
+		ComboButton_SetText( file.inviteRoomButton, "#PRIVATE_MATCH" )
+		// ComboButton_SetText( file.inviteFriendsButton, "#TOGGLE_PROGRESSION" )
+		Hud_SetVisible( file.inviteFriendsButton, false )
+
+		Hud_SetLocked( file.inboxButton, true )
+		Hud_SetLocked( file.browseNetworkButton, true )
+		Hud_SetLocked( file.switchButton, true )
+		Hud_SetLocked( file.inviteFriendsToNetworkButton, true )
+
+		Hud_SetLocked( file.storeButton, true )
+		Hud_SetLocked( file.storeNewReleasesButton, true )
+		Hud_SetLocked( file.storeBundlesButton, true )
+	}
+}
+
 bool function DLCStoreShouldBeMarkedAsNew()
 {
 	if ( !IsFullyConnected() )
@@ -676,7 +773,7 @@ bool function DLCStoreShouldBeMarkedAsNew()
 		return false
 
 	bool hasSeenStore = expect bool( GetPersistentVar( "hasSeenStore" ) )
-	bool result = (!hasSeenStore)
+	bool result = ( !hasSeenStore )
 	return result
 }
 
@@ -687,13 +784,28 @@ void function LobbyMenuUpdate( var menu )
 	while ( GetTopNonDialogMenu() == menu )
 	{
 		bool inPendingOpenInvite = InPendingOpenInvite()
-		Hud_SetLocked( file.findGameButton, !IsPartyLeader() || inPendingOpenInvite )
-		Hud_SetLocked( file.inviteRoomButton, IsOpenInviteVisible() || GetPartySize() > 1 || inPendingOpenInvite )
-		Hud_SetLocked( file.inviteFriendsButton, inPendingOpenInvite )
+		if ( NSIsVanilla() )
+		{
+			Hud_SetLocked( file.findGameButton, !IsPartyLeader() || inPendingOpenInvite )
+			Hud_SetLocked( file.inviteRoomButton, IsOpenInviteVisible() || GetPartySize() > 1 || inPendingOpenInvite )
+			Hud_SetLocked( file.inviteFriendsButton, inPendingOpenInvite )
+
+			string friendsText = "#MENU_TITLE_INVITE_FRIENDS"
+			if ( NSGetFriendSubscriptionMap().len() > 0 && !( GetPartySize() > 1 ) )
+				friendsText = Localize( "#MENU_TITLE_COMBO_FRIENDS", NSGetFriendSubscriptionMap().len() )
+
+			ComboButton_SetText( file.inviteFriendsButton, friendsText )
+		}
+		else
+		{
+			Hud_SetLocked( file.findGameButton, false )
+			Hud_SetLocked( file.inviteRoomButton, false )
+			Hud_SetLocked( file.inviteFriendsButton, false )
+		}
 
 		bool canGenUp = false
 		if ( GetUIPlayer() )
-			canGenUp = GetPersistentVarAsInt( "xp" ) == GetMaxPlayerXP() && GetGen() < MAX_GEN
+			canGenUp = GetPersistentVarAsInt( "xp" ) >= GetMaxPlayerXP() && GetGen() < MAX_GEN
 
 		Hud_SetVisible( file.genUpButton, canGenUp )
 		Hud_SetEnabled( file.genUpButton, canGenUp )
@@ -721,7 +833,7 @@ void function PutPlayerInMatchmakingAfterDelay()
 	EndSignal( uiGlobal.signalDummy, "OnCloseLobbyMenu" )
 	EndSignal( uiGlobal.signalDummy, "CleanupInGameMenus" )
 
-	if ( AreWeMatchmaking() ) //Party member, party leader is already searching
+	if ( AreWeMatchmaking() ) // Party member, party leader is already searching
 		return
 
 	entity player = GetUIPlayer()
@@ -730,8 +842,8 @@ void function PutPlayerInMatchmakingAfterDelay()
 
 	string lastPlaylist = expect string( player.GetPersistentVar( "lastPlaylist" ) )
 
-	//Bump player out of match making if they were playing coliseum and are out of tickets.
-	if ( ("coliseum" == lastPlaylist) && Player_GetColiseumTicketCount( GetLocalClientPlayer() ) <= 0 )
+	// Bump player out of match making if they were playing coliseum and are out of tickets.
+	if ( ( "coliseum" == lastPlaylist ) && Player_GetColiseumTicketCount( GetLocalClientPlayer() ) <= 0 )
 	{
 		SetNextAutoMatchmakingPlaylist( "" )
 		return
@@ -769,7 +881,7 @@ void function WaitBeforeRestartingMatchmaking()
 	SetPutPlayerInMatchmakingAfterDelay( !isPartyMemberThatIsNotLeader )
 
 	if ( isPartyMemberThatIsNotLeader )
-		timeToWait = 99999 //HACK, JFS
+		timeToWait = 99999 // HACK, JFS
 	else
 		timeToWait = GetCurrentPlaylistVarFloat( "wait_before_restarting_matchmaking_time", 30.0 )
 
@@ -778,7 +890,7 @@ void function WaitBeforeRestartingMatchmaking()
 	UpdateTimeToRestartMatchmaking( timeToEnd )
 
 	OnThreadEnd(
-	function() : (  )
+		function() : ()
 		{
 			UpdateTimeToRestartMatchmaking( 0.0 )
 			UpdateFooterOptions()
@@ -787,17 +899,16 @@ void function WaitBeforeRestartingMatchmaking()
 
 	if ( isPartyMemberThatIsNotLeader )
 	{
-		while( Time() < timeToEnd ) //Hack hack, JFS. No appropriate signals for StartMatchmaking() being called. Replace when code gives us notifications about it
+		while ( Time() < timeToEnd ) // Hack hack, JFS. No appropriate signals for StartMatchmaking() being called. Replace when code gives us notifications about it
 		{
-			if ( isPartyMemberThatIsNotLeader != ( AmIPartyMember() ) ) //Party Status changed. Party leader probably left?
+			if ( isPartyMemberThatIsNotLeader != ( AmIPartyMember() ) ) // Party Status changed. Party leader probably left?
 				break
 
-			if ( AreWeMatchmaking() ) //Need to break out if Party Leader brings us into matchmaking
+			if ( AreWeMatchmaking() ) // Need to break out if Party Leader brings us into matchmaking
 				break
 
 			WaitFrame()
 		}
-
 	}
 	else
 	{
@@ -837,7 +948,9 @@ function GameStartTime_Changed()
 
 function ShowGameSummary_Changed()
 {
-	if ( level.ui.showGameSummary )
+	bool compatOk = GetConVarInt( "previous_match_compat_mode" ) == NSIsVanilla().tointeger() || ( GetConVarInt( "previous_match_compat_mode" ) == -1 )
+
+	if ( level.ui.showGameSummary && compatOk )
 		uiGlobal.EOGOpenInLobby = true
 }
 
@@ -881,7 +994,7 @@ string function GetActiveSearchingPlaylist()
 
 float function CalcMatchmakingWaitTime()
 {
-	float result = ((file.matchmakingStartTime > 0.01) ? (Time() - file.matchmakingStartTime) : 0.0)
+	float result = ( ( file.matchmakingStartTime > 0.01 ) ? ( Time() - file.matchmakingStartTime ) : 0.0 )
 	return result
 }
 
@@ -962,7 +1075,7 @@ void function UpdateMatchmakingStatus()
 				}
 			}
 
-			if ( isConnectingToMatch && (matchmakingStatus != file.lastMixtapeMatchmakingStatus) )
+			if ( isConnectingToMatch && ( matchmakingStatus != file.lastMixtapeMatchmakingStatus ) )
 			{
 				EmitUISound( MATCHMAKING_AUDIO_CONNECTING )
 
@@ -978,13 +1091,19 @@ void function UpdateMatchmakingStatus()
 		{
 			if ( level.ui.gameStartTimerComplete )
 			{
-				MatchmakingSetSearchText( matchmakingStatus, GetMyMatchmakingStatusParam( 1 ), GetMyMatchmakingStatusParam( 2 ), GetMyMatchmakingStatusParam( 3 ), GetMyMatchmakingStatusParam( 4 ) )
+				MatchmakingSetSearchText(
+					matchmakingStatus,
+					GetMyMatchmakingStatusParam( 1 ),
+					GetMyMatchmakingStatusParam( 2 ),
+					GetMyMatchmakingStatusParam( 3 ),
+					GetMyMatchmakingStatusParam( 4 )
+				)
 			}
 
 			if ( uiGlobal.activeMenu == searchMenu )
 				CloseActiveMenu()
 		}
-		else if ( GetTimeToRestartMatchMaking() > 0  )
+		else if ( GetTimeToRestartMatchMaking() > 0 )
 		{
 			UpdateRestartMatchmakingStatus( GetTimeToRestartMatchMaking() )
 		}
@@ -1026,15 +1145,15 @@ void function UpdateMatchmakingStatus()
 						string statusText = Localize( "#MATCHMAKING_PLAYLISTS" )
 						RuiSetString( Hud_GetRui( statusEl ), "statusText", statusText )
 						for ( int idx = 1; idx <= 5; ++idx )
-							RuiSetString( Hud_GetRui( statusEl ), ("bulletPointText" + idx), "" )
+							RuiSetString( Hud_GetRui( statusEl ), ( "bulletPointText" + idx ), "" )
 
 						const int MAX_SHOWN_PLAYLISTS = 9
-						array< string > searchingPlaylists = split( playlistList, "," )
+						array<string> searchingPlaylists = split( playlistList, "," )
 						int searchingCount = minint( searchingPlaylists.len(), MAX_SHOWN_PLAYLISTS )
 						RuiSetInt( Hud_GetRui( statusEl ), "playlistCount", searchingCount )
-						for( int idx = 0; idx < searchingCount; ++idx )
+						for ( int idx = 0; idx < searchingCount; ++idx )
 						{
-							asset playlistThumbnail = GetPlaylistThumbnailImage( searchingPlaylists[idx] )
+							asset playlistThumbnail = GetPlaylistThumbnailImage( searchingPlaylists[ idx ] )
 							RuiSetImage( Hud_GetRui( statusEl ), format( "playlistIcon%d", idx ), playlistThumbnail )
 						}
 					}
@@ -1054,14 +1173,7 @@ void function UpdateMatchmakingStatus()
 					string etaStr = ""
 					if ( !etaSeconds && !isConnectingToMatch )
 					{
-						if (matchmakingStatus == "#MATCHMAKING_ALLOCATING_SERVER")
-						{
-							MatchmakingSetSearchText("#MATCHMAKING_ALLOCATING_SERVER")
-						}
-						else
-						{
-							matchmakingStatus = "#MATCHMAKING_SEARCHING_FOR_MATCH"
-						}
+						matchmakingStatus = "#MATCHMAKING_SEARCHING_FOR_MATCH"
 					}
 					else
 					{
@@ -1109,7 +1221,10 @@ void function UpdateAnnouncementDialog()
 	while ( IsLobby() && IsFullyConnected() )
 	{
 		// Only safe on these menus. Not safe if these variables are true because they indicate the search menu or postgame menu are going to be opened.
-		if ( ( uiGlobal.activeMenu == GetMenu( "LobbyMenu" ) || uiGlobal.activeMenu == GetMenu( "PrivateLobbyMenu" ) ) && !file.putPlayerInMatchmakingAfterDelay && !uiGlobal.EOGOpenInLobby )
+		if (
+			( uiGlobal.activeMenu == GetMenu( "LobbyMenu" ) || uiGlobal.activeMenu == GetMenu( "PrivateLobbyMenu" ) ) && !file.putPlayerInMatchmakingAfterDelay &&
+			!uiGlobal.EOGOpenInLobby
+		)
 		{
 			entity player = GetUIPlayer()
 
@@ -1118,7 +1233,7 @@ void function UpdateAnnouncementDialog()
 				uiGlobal.announcementVersionSeen = player.GetPersistentVarAsInt( "announcementVersionSeen" )
 
 			int announcementVersion = GetConVarInt( "announcementVersion" )
-			if ( announcementVersion > uiGlobal.announcementVersionSeen )
+			if ( announcementVersion > uiGlobal.announcementVersionSeen && !NSIsVanilla() )
 			{
 				OpenAnnouncementDialog()
 			}
@@ -1138,7 +1253,7 @@ bool function CurrentMenuIsPVEMenu()
 	if ( topMenu == null )
 		return false
 
-	return (uiGlobal.menuData[topMenu].isPVEMenu)
+	return ( uiGlobal.menuData[ topMenu ].isPVEMenu )
 }
 
 void function RefreshCreditsAvailable( int creditsOverride = -1 )
@@ -1162,8 +1277,23 @@ void function RefreshCreditsAvailable( int creditsOverride = -1 )
 
 	foreach ( elem in file.creditsAvailableElems )
 	{
-		SetUIPlayerCreditsInfo( elem, credits, GetLocalClientPlayer().GetXP(), GetGen(), GetLevel(), GetNextLevel( GetLocalClientPlayer() ), isPVE, pveCredits, pveTitle )
+		SetUIPlayerCreditsInfo(
+			elem,
+			credits,
+			GetLocalClientPlayer().GetXP(),
+			GetGen(),
+			GetLevel(),
+			GetNextLevel( GetLocalClientPlayer() ),
+			isPVE,
+			pveCredits,
+			pveTitle
+		)
 	}
+}
+
+array function GetUICreditsAvailableElems()
+{
+	return file.creditsAvailableElems
 }
 
 void function SetUIPlayerCreditsInfo( var infoElement, int credits, int xp, int gen, int level, int nextLevel, bool isPVE, int pveCredits, string pveTitle )
@@ -1179,14 +1309,14 @@ void function SetUIPlayerCreditsInfo( var infoElement, int credits, int xp, int 
 		RuiSetString( rui, "pveTitle", pveTitle )
 	}
 
-	if ( xp == GetMaxPlayerXP() && gen < MAX_GEN )
+	if ( xp >= GetMaxPlayerXP() && gen < MAX_GEN )
 	{
 		RuiSetString( rui, "levelText", PlayerXPDisplayGenAndLevel( gen, level ) )
 		RuiSetString( rui, "nextLevelText", Localize( "#REGEN_AVAILABLE" ) )
 		RuiSetInt( rui, "numLevelPips", GetXPPipsForLevel( level - 1 ) )
 		RuiSetInt( rui, "filledLevelPips", GetXPPipsForLevel( level - 1 ) )
 	}
-	else if ( xp == GetMaxPlayerXP() && gen == MAX_GEN )
+	else if ( xp >= GetMaxPlayerXP() && gen == MAX_GEN )
 	{
 		RuiSetString( rui, "levelText", PlayerXPDisplayGenAndLevel( gen, level ) )
 		RuiSetString( rui, "nextLevelText", Localize( "#MAX_GEN" ) )
@@ -1221,8 +1351,13 @@ void function BigPlayButton1_Activate( var button )
 	if ( Hud_IsLocked( button ) )
 		return
 
-	SendOpenInvite( false )
-	OpenSelectedPlaylistMenu()
+	if ( !NSIsVanilla() )
+		OpenServerBrowser( button )
+	else
+	{
+		SendOpenInvite( false )
+		OpenSelectedPlaylistMenu()
+	}
 }
 
 function EnableButton( button )
@@ -1259,7 +1394,8 @@ function UpdateLobbyUI()
 	thread UpdateLobbyType()
 	thread UpdateMatchmakingStatus()
 	thread UpdateChatroomThread()
-	//thread UpdateInviteJoinButton()
+	if ( NSIsVanilla() )
+		thread UpdateInviteJoinButton()
 	thread UpdateInviteFriendsToNetworkButton()
 	thread UpdatePlayerInfo()
 
@@ -1270,7 +1406,7 @@ function UpdateLobbyUI()
 		if ( IsStoreMenu( uiGlobal.menuToOpenFromPromoButton ) )
 		{
 			string menuName = expect string( uiGlobal.menuToOpenFromPromoButton._name )
-			
+
 			void functionref() preOpenfunc = null
 			if ( uiGlobal.menuToOpenFromPromoButton == GetMenu( "StoreMenu_WeaponSkins" ) ) // Hardcoded special case for now
 				preOpenfunc = DefaultToDLC11WeaponWarpaintBundle
@@ -1339,23 +1475,27 @@ function UpdateLobbyType()
 
 	WaitFrameOrUntilLevelLoaded()
 
+	if ( GetLobbyTypeScript() == 0 )
+		ClientCommand( "createparty" )
+
 	while ( true )
 	{
 		lobbyType = GetLobbyTypeScript()
 		partySize = GetPartySize()
 
-		if ( IsConnected() && ((lobbyType != lastType) || (partySize != lastPartySize))  )
+		if ( IsConnected() && ( ( lobbyType != lastType ) || ( partySize != lastPartySize ) ) )
 		{
 			if ( lastType == null )
-				printt( "Lobby lobbyType changing from:", lastType, "to:", debugArray[lobbyType] )
+				printt( "Lobby lobbyType changing from:", lastType, "to:", debugArray[ lobbyType ] )
 			else
-				printt( "Lobby lobbyType changing from:", debugArray[lastType], "to:", debugArray[lobbyType] )
+				printt( "Lobby lobbyType changing from:", debugArray[ lastType ], "to:", debugArray[ lobbyType ] )
 
 			local animation = null
 
 			switch ( lobbyType )
 			{
 				case eLobbyType.SOLO:
+					ClientCommand( "createparty" )
 					animation = "SoloLobby"
 					break
 
@@ -1368,10 +1508,14 @@ function UpdateLobbyType()
 					break
 
 				case eLobbyType.MATCH:
+					if ( GetConVarString( "match_partySub" ) == "" )
+						ClientCommand( "createparty" )
 					animation = "MatchLobby"
 					break
 
 				case eLobbyType.PRIVATE_MATCH:
+					if ( GetConVarString( "match_partySub" ) == "" )
+						ClientCommand( "createparty" )
 					animation = "PrivateMatchLobby"
 					break
 			}
@@ -1400,7 +1544,7 @@ void function UICodeCallback_CommunityUpdated()
 
 void function UICodeCallback_FactionUpdated()
 {
-	printt( "Faction changed! to " + GetCurrentFaction() );
+	printt( "Faction changed! to " + GetCurrentFaction() )
 }
 
 void function UICodeCallback_SetupPlayerListGenElements( table params, int gen, int rank, bool isPlayingRanked, int pilotClassIndex )
@@ -1415,11 +1559,11 @@ float function GetTimeToRestartMatchMaking()
 	return file.timeToRestartMatchMaking
 }
 
-void function UpdateTimeToRestartMatchmaking( float time )//JFS: This uses UI time instead of server time, which leads to awkwardness in MatchmakingSetCountdownTimer() and the rui involved
+void function UpdateTimeToRestartMatchmaking( float time ) // JFS: This uses UI time instead of server time, which leads to awkwardness in MatchmakingSetCountdownTimer() and the rui involved
 {
-	file.timeToRestartMatchMaking  = time
+	file.timeToRestartMatchMaking = time
 
-	if ( time > 0  )
+	if ( time > 0 )
 	{
 		UpdateRestartMatchmakingStatus( time )
 		ShowMatchmakingStatusIcons()
@@ -1443,8 +1587,8 @@ void function HideMatchmakingStatusIcons()
 
 void function ShowMatchmakingStatusIcons()
 {
-	//foreach ( element in file.searchIconElems )
-	//	Hud_Show( element )
+	// foreach ( element in file.searchIconElems )
+	// 	Hud_Show( element )
 
 	foreach ( element in file.matchStatusRuis )
 		RuiSetBool( Hud_GetRui( element ), "iconVisible", true )
@@ -1454,10 +1598,10 @@ void function MatchmakingSetSearchVisible( bool state )
 {
 	foreach ( el in file.searchTextElems )
 	{
-		//if ( state )
-		//	Hud_Show( el )
-		//else
-			Hud_Hide( el )
+		// if ( state )
+		// 	Hud_Show( el )
+		// else
+		Hud_Hide( el )
 	}
 
 	foreach ( element in file.matchStatusRuis )
@@ -1479,22 +1623,21 @@ void function MatchmakingSetSearchText( string searchText, var param1 = "", var 
 	}
 }
 
-
 void function MatchmakingSetCountdownVisible( bool state )
 {
 	foreach ( el in file.matchStartCountdownElems )
 	{
-		//if ( state )
-		//	Hud_Show( el )
-		//else
-			Hud_Hide( el )
+		// if ( state )
+		// 	Hud_Show( el )
+		// else
+		Hud_Hide( el )
 	}
 
 	foreach ( element in file.matchStatusRuis )
 		RuiSetBool( Hud_GetRui( element ), "timerVisible", state )
 }
 
-void function MatchmakingSetCountdownTimer( float time, bool useServerTime = true ) //JFS: useServerTime bool is awkward, comes from level.ui.gameStartTime using server time and UpdateTimeToRestartMatchmaking() uses UI time.
+void function MatchmakingSetCountdownTimer( float time, bool useServerTime = true ) // JFS: useServerTime bool is awkward, comes from level.ui.gameStartTime using server time and UpdateTimeToRestartMatchmaking() uses UI time.
 {
 	foreach ( element in file.matchStatusRuis )
 	{
@@ -1553,17 +1696,26 @@ void function SetPutPlayerInMatchmakingAfterDelay( bool value )
 
 void function OnStoreButton_Activate( var button )
 {
+	if ( Hud_IsLocked( button ) )
+		return
+
 	LaunchGamePurchaseOrDLCStore()
 }
 
 void function OnStoreNewReleasesButton_Activate( var button )
 {
-	//LaunchGamePurchaseOrDLCStore( [ "StoreMenu", "StoreMenu_NewReleases" ] )
+	if ( Hud_IsLocked( button ) )
+		return
+
+	// LaunchGamePurchaseOrDLCStore( [ "StoreMenu", "StoreMenu_NewReleases" ] )
 	LaunchGamePurchaseOrDLCStore( [ "StoreMenu", "StoreMenu_WeaponSkins" ] )
 }
 
 void function OnStoreBundlesButton_Activate( var button )
 {
+	if ( Hud_IsLocked( button ) )
+		return
+
 	LaunchGamePurchaseOrDLCStore( [ "StoreMenu", "StoreMenu_Sales" ] )
 }
 
@@ -1580,7 +1732,7 @@ void function OpenCommsIntroDialog()
 	dialogData.ruiMessage.message = "#DPAD_COMMS_ANNOUNCEMENT"
 	dialogData.image = $"ui/menu/common/dialog_announcement_1"
 
-	AddDialogButton( dialogData, "#DPAD_COMMS_ANNOUNCEMENT_B1" , OpenDpadCommsMenu )
+	AddDialogButton( dialogData, "#DPAD_COMMS_ANNOUNCEMENT_B1", OpenDpadCommsMenu )
 	AddDialogButton( dialogData, "#DPAD_COMMS_ANNOUNCEMENT_B2" )
 
 	AddDialogPCBackButton( dialogData )
@@ -1609,8 +1761,8 @@ bool function ShouldShowEmotesAnnouncement( entity player )
 		return false
 
 	#if !DEV
-	if ( PlayerGetRawLevel( player ) <= 2 )
-		return false
+		if ( PlayerGetRawLevel( player ) <= 2 )
+			return false
 	#endif
 
 	return true
@@ -1621,7 +1773,7 @@ void function Lobby_SetFDMode( bool mode )
 	file.isFDMode = mode
 }
 
-//Function returns whether lobby is currently in "Frontier Defense" lobby mode.
+// Function returns whether lobby is currently in "Frontier Defense" lobby mode.
 bool function Lobby_IsFDMode()
 {
 	return file.isFDMode
@@ -1635,13 +1787,13 @@ void function Lobby_SetAutoFDOpen( bool autoFD )
 
 void function Lobby_SetFDModeBasedOnSearching( string playlistToSearch )
 {
-	array< string > searchingPlaylists = split( playlistToSearch, "," )
+	array<string> searchingPlaylists = split( playlistToSearch, "," )
 
 	bool isFDMode = false
 	int searchingCount = searchingPlaylists.len()
-	for( int idx = 0; idx < searchingCount; ++idx )
+	for ( int idx = 0; idx < searchingCount; ++idx )
 	{
-		isFDMode = isFDMode || IsFDMode( searchingPlaylists[idx] )
+		isFDMode = isFDMode || IsFDMode( searchingPlaylists[ idx ] )
 		if ( isFDMode )
 			break
 	}

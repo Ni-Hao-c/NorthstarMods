@@ -721,6 +721,12 @@ bool function IsValueValidForPropertyWithCategoryRestriction( entity player, int
 
 bool function FailsItemLockedValidationCheck( entity player, string loadoutType, int loadoutIndex, string loadoutProperty, string ref  )
 {
+	// A disabled progression preference means all valid items are unlocked.
+	// Keep enum/reference/pair validation elsewhere in this file intact, but do
+	// not reset a valid loadout merely because its progression unlock is absent.
+	if ( !ProgressionEnabledForPlayer( player ) )
+		return false
+
 	bool shouldSkipValidation = ( GetCurrentPlaylistVarInt( "skip_loadout_item_locked_validation", 0 ) == 1 )
 	if ( shouldSkipValidation )
 	{

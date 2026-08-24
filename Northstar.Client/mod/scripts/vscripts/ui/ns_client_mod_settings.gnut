@@ -1,0 +1,43 @@
+global function NSClientModSettings
+
+void function NSClientModSettings()
+{
+	ModSettings_AddModTitle( "Northstar" )
+	ModSettings_AddModCategory( "主選單" )
+	ModSettings_AddEnumSetting( "hide_motd", "促銷訊息", [ "#SETTING_ENABLED", "#SETTING_DISABLED" ] )
+	ModSettings_AddEnumSetting( "hide_spotlight", "聚焦推薦", [ "#SETTING_ENABLED", "#SETTING_DISABLED" ] )
+	ModSettings_AddEnumSetting( "hide_subtext", "模組副標題", [ "#SETTING_ENABLED", "#SETTING_DISABLED" ] )
+	ModSettings_AddEnumSetting( "hide_version", "版本", [ "#SETTING_ENABLED", "#SETTING_DISABLED" ] )
+	ModSettings_AddModCategory( "遊戲中" )
+	ModSettings_AddEnumSetting( "serverlist_remove_colors", "移除伺服器名稱/描述顏色", [ "#SETTING_OFF", "#SETTING_ON" ], 2 )
+	ModSettings_AddModCategory( "示範" )
+	ModSettings_AddEnumSetting( "demo_autoRecord", "自動錄製示範", [ "#SETTING_OFF", "#SETTING_ON" ] )
+	ModSettings_AddModCategory( "影片" )
+	ModSettings_AddEnumSetting( "mat_disable_bloom", "泛光效果", [ "#SETTING_ENABLED", "#SETTING_DISABLED" ] )
+	ModSettings_AddModCategory( "社區" )
+	ModSettings_AddSliderSetting( "openinvite_duration_default", "網路邀請持續時間", 0.0, 120.0, 1.0 )
+	ModSettings_AddEnumSetting( "openInvites_filterByLanguage", "按：語言篩選邀請", [ "#SETTING_OFF", "#SETTING_ON" ] )
+	ModSettings_AddEnumSetting( "openInvites_filterByRegion", "按：地區篩選邀請", [ "#SETTING_OFF", "#SETTING_ON" ] )
+	// This callback only needs the core mod's name and enabled state. Avoid building the
+	// full ModInfo inventory during UI startup, which also probes install/removal paths for
+	
+	foreach ( string modName in NSGetModNames() )
+	{
+		if ( modName == "Northstar.Custom" )
+		{
+			if ( NSIsModEnabled( modName ) )
+			{
+					ModSettings_AddModCategory( "活動模型" )
+					ModSettings_AddEnumSetting( "ns_show_event_models", "顯示活動模型", [ "#SETTING_OFF", "#SETTING_ON" ] )
+			}
+		}
+	}
+
+	ModSettings_AddModCategory( "娛樂" )
+	ModSettings_AddButton( "Fight sans", OpenSans )
+}
+
+void function OpenSans()
+{
+	LaunchExternalWebBrowser( "https://jcw87.github.io/c2-sans-fight/", WEBBROWSER_FLAG_MUTEGAME )
+}

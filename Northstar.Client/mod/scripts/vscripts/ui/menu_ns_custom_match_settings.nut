@@ -5,6 +5,7 @@ const string SETTING_ITEM_TEXT = "                           " // this is long e
 
 struct {
 	string currentCategory
+	array< CustomMatchSettingContainer > settings
 	
 	table< int, int > enumRealValues
 } file
@@ -17,10 +18,27 @@ void function AddNorthstarCustomMatchSettingsMenu()
 void function SetNextMatchSettingsCategory( string category )
 {
 	file.currentCategory = category
+	file.enumRealValues.clear()
+	file.settings.clear()
+
+	if ( category == "" )
+	{
+		foreach ( string categoryName in GetPrivateMatchSettingCategories() )
+		{
+			foreach ( CustomMatchSettingContainer setting in GetPrivateMatchCustomSettingsForCategory( categoryName ) )
+				file.settings.append( setting )
+		}
+
+		Hud_SetText( Hud_GetChild( GetMenu( "CustomMatchSettingsMenu" ), "Title" ), Localize( "#MENU_MATCH_SETTINGS" ) )
+		print( "Loaded " + file.settings.len() + " Ion private match settings" )
+		return
+	}
+
+	foreach ( CustomMatchSettingContainer setting in GetPrivateMatchCustomSettingsForCategory( category ) )
+		file.settings.append( setting )
+
 	Hud_SetText( Hud_GetChild( GetMenu( "CustomMatchSettingsMenu" ), "Title" ), Localize( "#MENU_MATCH_SETTINGS_SUBMENU", Localize( category ) ) )
 	print( "Category: " + category )
-	
-	file.enumRealValues.clear()
 }
 
 void function InitNorthstarCustomMatchSettingsMenu()
@@ -59,9 +77,12 @@ void function OnNorthstarCustomMatchSettingsMenuOpened()
 		Hud_SetVisible( textPanel, false )
 	}
 	
-	int i = 0;
-	foreach ( CustomMatchSettingContainer setting in GetPrivateMatchCustomSettingsForCategory( file.currentCategory ) )
+	int i = 0
+	foreach ( CustomMatchSettingContainer setting in file.settings )
 	{
+		if ( i >= buttons.len() || i >= textPanels.len() )
+			break
+
 		Hud_SetEnabled( buttons[ i ], true )
 		Hud_SetVisible( buttons[ i ], true )
 		Hud_SetText( buttons[ i ], setting.localizedName )
@@ -98,8 +119,12 @@ void function OnNorthstarCustomMatchSettingsMenuOpened()
 
 void function OnSettingButtonPressed( var button )
 {
-	CustomMatchSettingContainer setting = GetPrivateMatchCustomSettingsForCategory( file.currentCategory )[ int( Hud_GetScriptID( button ) ) ]
-	var textPanel = GetElementsByClassname( GetMenu( "CustomMatchSettingsMenu" ), "MatchSettingTextEntry" )[ int( Hud_GetScriptID( button ) ) ]
+	int settingIndex = int( Hud_GetScriptID( button ) )
+	if ( settingIndex < 0 || settingIndex >= file.settings.len() )
+		return
+
+	CustomMatchSettingContainer setting = file.settings[ settingIndex ]
+	var textPanel = GetElementsByClassname( GetMenu( "CustomMatchSettingsMenu" ), "MatchSettingTextEntry" )[ settingIndex ]
 	
 	if ( setting.isEnumSetting )
 	{
@@ -133,7 +158,11 @@ void function OnSettingButtonPressed( var button )
 
 void function SendTextPanelChanges( var textPanel ) 
 {
-	CustomMatchSettingContainer setting = GetPrivateMatchCustomSettingsForCategory( file.currentCategory )[ int( Hud_GetScriptID( textPanel ) ) ]
+	int settingIndex = int( Hud_GetScriptID( textPanel ) )
+	if ( settingIndex < 0 || settingIndex >= file.settings.len() )
+		return
+
+	CustomMatchSettingContainer setting = file.settings[ settingIndex ]
 	
 	// enums don't need to do this
 	if ( !setting.isEnumSetting )

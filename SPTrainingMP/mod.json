@@ -1,0 +1,15 @@
+{
+    "Name": "SPTrainingMP",
+    "Description": "Mounts sp_training into multiplayer as the virtual map mp_training without copying campaign map assets",
+    "Version": "0.2.0",
+    "LoadPriority": 2,
+    "RequiredOnClient": true,
+    "VirtualMaps":
+    {
+        "mp_training":
+        {
+            "SourceMap": "sp_training",
+            "ExtraRpaks": ["common_sp.rpak"]
+        }
+    }
+}

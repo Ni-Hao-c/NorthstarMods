@@ -40,7 +40,7 @@ resource/ui/menus/mods_browse.menu
 			ControlName Label
 			labelText ""
 
-			xpos 80
+			xpos 130
 			ypos 204
 		}
 
@@ -49,7 +49,7 @@ resource/ui/menus/mods_browse.menu
 			ControlName Label
 			labelText ""
 
-			xpos 44
+			xpos 94
 			ypos 160
 		}
 
@@ -58,7 +58,7 @@ resource/ui/menus/mods_browse.menu
 			ControlName Label
 			labelText ""
 
-			xpos 40
+			xpos 90
 			ypos 807
 		}
 
@@ -75,98 +75,8 @@ resource/ui/menus/mods_browse.menu
 			tall %100
 			labelText ""
 			bgcolor_override "0 0 0 160"
-			visible 1
+			visible 0
 			paintbackground 1
-		}
-
-		ConnectingAnimation
-		{
-			ControlName RuiPanel
-			classname ConnectingHUD
-			rui "ui/matchmaking_status_big.rpak"
-
-			xpos 448
-			ypos 284
-			wide 1024
-			tall 512
-
-			zpos 100
-			visible 1
-		}
-
-
-
-		ConnectingLabel
-		{
-			ControlName Label
-			classname ConnectingHUD
-			wide 160
-			tall 40
-			ypos -310
-			xpos -432
-			labelText "#CONNECTING"
-			fgcolor_override "107 166 196 255"
-			textAlignment center
-
-			visible 1
-			zpos 101
-
-			pin_to_sibling ConnectingAnimation
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-
-		ConnectingLabelBackground
-		{
-			ControlName RuiPanel
-			classname ConnectingHUD
-			wide 160
-			tall 40
-			ypos -310
-			xpos -432
-			zpos 100
-
-			rui "ui/control_options_description.rpak"
-
-			pin_to_sibling ConnectingAnimation
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-
-		ConnectingButton
-		{
-			ControlName RuiButton
-			classname ConnectingHUD
-			InheritProperties RuiSmallButton
-			labelText "#CANCEL"
-			textAlignment center
-			wide 100
-			tall 40
-			ypos -220
-			xpos -462
-			zpos 101
-
-			//fgcolor_override "107 166 196 255"
-
-			pin_to_sibling ConnectingAnimation
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		ConnectingButtonBackground
-		{
-			ControlName RuiPanel
-			classname ConnectingHUD
-			wide 100
-			tall 40
-			ypos -220
-			xpos -462
-			zpos 100
-
-			rui "ui/control_options_description.rpak"
-
-			pin_to_sibling ConnectingAnimation
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
 		}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,7 +110,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 200
 
 			pin_to_sibling FilterPanel
@@ -217,7 +127,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 239
 
 			pin_to_sibling BtnServer2
@@ -232,7 +142,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 279
 
 			pin_to_sibling BtnServer3
@@ -247,7 +157,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 319
 
 			pin_to_sibling BtnServer4
@@ -262,7 +172,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 359
 
 			pin_to_sibling BtnServer5
@@ -277,7 +187,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 399
 
 			pin_to_sibling BtnServer6
@@ -292,7 +202,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 439
 
 			pin_to_sibling BtnServer7
@@ -307,7 +217,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 479
 
 			pin_to_sibling BtnServer8
@@ -322,7 +232,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 519
 
 			pin_to_sibling BtnServer9
@@ -337,7 +247,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 559
 
 			pin_to_sibling BtnServer10
@@ -352,7 +262,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 599
 
 			pin_to_sibling BtnServer11
@@ -367,7 +277,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 639
 
 			pin_to_sibling BtnServer12
@@ -382,7 +292,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 679
 
 			pin_to_sibling BtnServer13
@@ -397,7 +307,7 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 719
 
 			pin_to_sibling BtnServer14
@@ -412,8 +322,254 @@ resource/ui/menus/mods_browse.menu
 			scaleImage 1
 			wide 48
 			tall 48
-			xpos 44
+			xpos 94
 			ypos 759
+
+			pin_to_sibling BtnServer15
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		
+		// Region
+		BtnServerRegionTab
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			labelText "#REGION_COLUMN"
+			wide 110
+			xpos -4
+			ypos -1
+
+			scriptID 999
+
+			pin_to_sibling BtnServerPasswordProtectedTab
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_RIGHT
+			navDown BtnServer1
+			navRight BtnServerNameTab
+			navUp BtnFiltersClear
+		}
+
+		BtnServerRegion1
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer1
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion2
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer2
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion3
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer3
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion4
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer4
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion5
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer5
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion6
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer6
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion7
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer7
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion8
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer8
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion9
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer9
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion10
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer10
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion11
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer11
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion12
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer12
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion13
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer13
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion14
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
+
+			pin_to_sibling BtnServer14
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		BtnServerRegion15
+		{
+			ControlName Label
+			labelText ""
+			classname Serverregion
+			textAlignment center
+			wide 110
+			tall 44
+			ypos -42
+			xpos 0
 
 			pin_to_sibling BtnServer15
 			pin_corner_to_sibling TOP_LEFT
@@ -426,10 +582,8 @@ resource/ui/menus/mods_browse.menu
 			ControlName RuiButton
 			InheritProperties RuiSmallButton
 			labelText "#SERVERS_COLUMN"
-			textAlignment west
 			wide 600
-			xpos -4
-			ypos -1
+			xpos 4
 
 			scriptID 999
 
@@ -449,7 +603,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 			interactive false
 
@@ -466,7 +620,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer2
@@ -481,7 +635,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer3
@@ -496,7 +650,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer4
@@ -511,7 +665,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer5
@@ -526,7 +680,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer6
@@ -541,7 +695,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer7
@@ -556,7 +710,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer8
@@ -571,7 +725,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer9
@@ -586,7 +740,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer10
@@ -601,7 +755,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer11
@@ -616,7 +770,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer12
@@ -631,7 +785,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer13
@@ -646,7 +800,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer14
@@ -661,7 +815,7 @@ resource/ui/menus/mods_browse.menu
 			classname ServerName
 			wide 586
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -14
 
 			pin_to_sibling BtnServer15
@@ -676,7 +830,6 @@ resource/ui/menus/mods_browse.menu
 			ControlName RuiButton
 			InheritProperties RuiSmallButton
 			labelText "#PLAYERS_COLUMN"
-			textAlignment center
 			wide 104
 			xpos 4
 
@@ -699,7 +852,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer1
@@ -714,7 +867,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer2
@@ -729,7 +882,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer3
@@ -744,7 +897,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer4
@@ -759,7 +912,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer5
@@ -774,7 +927,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer6
@@ -789,7 +942,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer7
@@ -804,7 +957,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer8
@@ -819,7 +972,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer9
@@ -834,7 +987,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer10
@@ -849,7 +1002,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer11
@@ -864,7 +1017,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer12
@@ -879,7 +1032,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer13
@@ -894,7 +1047,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer14
@@ -909,7 +1062,7 @@ resource/ui/menus/mods_browse.menu
 			textAlignment center
 			wide 104
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -603
 
 			pin_to_sibling BtnServer15
@@ -946,7 +1099,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer1
@@ -961,7 +1114,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer2
@@ -976,7 +1129,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer3
@@ -991,7 +1144,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer4
@@ -1006,7 +1159,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer5
@@ -1021,7 +1174,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer6
@@ -1036,7 +1189,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer7
@@ -1051,7 +1204,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer8
@@ -1066,7 +1219,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer9
@@ -1081,7 +1234,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer10
@@ -1096,7 +1249,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer11
@@ -1111,7 +1264,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer12
@@ -1126,7 +1279,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer13
@@ -1141,7 +1294,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer14
@@ -1156,7 +1309,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -711
 
 			pin_to_sibling BtnServer15
@@ -1170,7 +1323,6 @@ resource/ui/menus/mods_browse.menu
 			ControlName RuiButton
 			InheritProperties RuiSmallButton
 			labelText "#GAMEMODE_COLUMN"
-			textAlignment center
 			wide 150
 			xpos 4
 
@@ -1181,7 +1333,7 @@ resource/ui/menus/mods_browse.menu
 			pin_to_sibling_corner TOP_RIGHT
 			navDown BtnServer1
 			navLeft BtnServerMapTab
-			navRight BtnServerLatencyTab
+			navRight BtnServerJoin
 			navUp BtnFiltersClear
 		}
 
@@ -1193,7 +1345,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer1
@@ -1208,7 +1360,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer2
@@ -1223,7 +1375,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer3
@@ -1238,7 +1390,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer4
@@ -1253,7 +1405,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer5
@@ -1268,7 +1420,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer6
@@ -1283,7 +1435,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer7
@@ -1298,7 +1450,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer8
@@ -1313,7 +1465,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer9
@@ -1328,7 +1480,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer10
@@ -1343,7 +1495,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer11
@@ -1358,7 +1510,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer12
@@ -1373,7 +1525,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer13
@@ -1388,7 +1540,7 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
 
 			pin_to_sibling BtnServer14
@@ -1403,502 +1555,8 @@ resource/ui/menus/mods_browse.menu
 			wide 140
 			textAlignment center
 			tall 44
-			ypos -44
+			ypos -42
 			xpos -860
-
-			pin_to_sibling BtnServer15
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-
-		// Latency
-		BtnServerLatencyTab
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			labelText "#LATENCY_COLUMN"
-			textAlignment center
-			wide 110
-			xpos 4
-
-			scriptID 999
-
-			pin_to_sibling BtnServerGamemodeTab
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner TOP_RIGHT
-			navDown BtnServer1
-			navLeft BtnServerGamemodeTab
-			navRight BtnServerGamestateTab
-			navUp BtnFiltersClear
-		}
-
-		BtnServerLatency1
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer1
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency2
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer2
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency3
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer3
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency4
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer4
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency5
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer5
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency6
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer6
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency7
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer7
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency8
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer8
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency9
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer9
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency10
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer10
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency11
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer11
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency12
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer12
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency13
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer13
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency14
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer14
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerLatency15
-		{
-			ControlName Label
-			labelText ""
-			classname Serverlatency
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1006
-
-			pin_to_sibling BtnServer15
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-
-		// Gamestate
-		BtnServerGamestateTab
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			labelText "#GAMESTATE_COLUMN"
-			textAlignment center
-			wide 100
-			xpos 4
-
-			scriptID 999
-
-			pin_to_sibling BtnServerLatencyTab
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner TOP_RIGHT
-			navDown BtnServer1
-			navLeft BtnServerLatencyTab
-			navRight BtnServerJoin
-			navUp BtnFiltersClear
-		}
-
-		BtnServerGamestate1
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGamestate
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer1
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate2
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGamestate
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer2
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate3
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer3
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate4
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer4
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate5
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer5
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate6
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer6
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate7
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer7
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate8
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer8
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate9
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer9
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate10
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer10
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate11
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer11
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate12
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer12
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate13
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer13
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate14
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
-
-			pin_to_sibling BtnServer14
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-		}
-		BtnServerGamestate15
-		{
-			ControlName Label
-			labelText ""
-			classname ServerGameState
-			textAlignment center
-			wide 110
-			tall 44
-			ypos -44
-			xpos -1119
 
 			pin_to_sibling BtnServer15
 			pin_corner_to_sibling TOP_LEFT
@@ -1909,124 +1567,107 @@ resource/ui/menus/mods_browse.menu
 
 		// Y
 		YDivider0
-	{
-				ControlName ImagePanel
-				wide 2
-				tall 641
-				visible 1
-				image "vgui/hud/white"
-				drawColor "160 157 149 255"
-				scaleImage 1
-				xpos 3
-				ypos -1
+		{
+			ControlName ImagePanel
+			wide 2
+			tall 641
+			visible 1
+			image "vgui/hud/white"
+			drawColor "160 157 149 255"
+			scaleImage 1
+			xpos 3
+			ypos -1
 
-				pin_to_sibling BtnServerNameTab
-				pin_corner_to_sibling TOP_LEFT
-				pin_to_sibling_corner TOP_LEFT
-	}
+			pin_to_sibling BtnServerNameTab
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
 
 		YDivider1
-	{
-		ControlName ImagePanel
-		wide 2
-		tall 641
-		visible 1
-		image "vgui/hud/white"
-		drawColor "160 157 149 255"
-		scaleImage 1
-				xpos 3
-				ypos -1
+		{
+			ControlName ImagePanel
+			wide 2
+			tall 641
+			visible 1
+			image "vgui/hud/white"
+			drawColor "160 157 149 255"
+			scaleImage 1
+			xpos 3
+			ypos -1
 
-				pin_to_sibling BtnServerPlayersTab
-				pin_corner_to_sibling TOP_LEFT
-				pin_to_sibling_corner TOP_LEFT
-	}
+			pin_to_sibling BtnServerPlayersTab
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
 
 		YDivider2
-	{
-		ControlName ImagePanel
-		wide 2
-		tall 641
-		visible 1
-		image "vgui/hud/white"
-		drawColor "160 157 149 255"
-		scaleImage 1
-				xpos 3
-				ypos -1
+		{
+			ControlName ImagePanel
+			wide 2
+			tall 641
+			visible 1
+			image "vgui/hud/white"
+			drawColor "160 157 149 255"
+			scaleImage 1
+			xpos 3
+			ypos -1
 
-				pin_to_sibling BtnServerMapTab
-				pin_corner_to_sibling TOP_LEFT
-				pin_to_sibling_corner TOP_LEFT
-	}
+			pin_to_sibling BtnServerMapTab
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
 
 		YDivider3
-	{
-		ControlName ImagePanel
-		wide 2
-		tall 641
-		visible 1
-		image "vgui/hud/white"
-		drawColor "160 157 149 255"
-		scaleImage 1
-				xpos 3
-				ypos -1
+		{
+			ControlName ImagePanel
+			wide 2
+			tall 641
+			visible 1
+			image "vgui/hud/white"
+			drawColor "160 157 149 255"
+			scaleImage 1
+			xpos 3
+			ypos -1
 
-				pin_to_sibling BtnServerGamemodeTab
-				pin_corner_to_sibling TOP_LEFT
-				pin_to_sibling_corner TOP_LEFT
-	}
+			pin_to_sibling BtnServerGamemodeTab
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
 
 		YDivider4
-	{
-		ControlName ImagePanel
-		wide 2
-		tall 641
-		visible 1
-		image "vgui/hud/white"
-		drawColor "160 157 149 255"
-		scaleImage 1
-				xpos 3
-				ypos -1
+		{
+			ControlName ImagePanel
+			wide 2
+			tall 641
+			visible 1
+			image "vgui/hud/white"
+			drawColor "160 157 149 255"
+			scaleImage 1
+			xpos 3
+			ypos -1
 
-				pin_to_sibling BtnServerLatencyTab
-				pin_corner_to_sibling TOP_LEFT
-				pin_to_sibling_corner TOP_LEFT
-	}
-	
-	YDivider5
-	{
-		ControlName ImagePanel
-		wide 2
-		tall 641
-		visible 1
-		image "vgui/hud/white"
-		drawColor "160 157 149 255"
-		scaleImage 1
-				xpos 3
-				ypos -1
-
-				pin_to_sibling BtnServerGamestateTab
-				pin_corner_to_sibling TOP_LEFT
-				pin_to_sibling_corner TOP_LEFT
-	}
+			pin_to_sibling BtnServerRegionTab
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
 
 		// X
 		XDivider0
-	{
-		ControlName ImagePanel
-		wide 1250
-		tall 2
-		visible 1
-		image "vgui/hud/white"
-		drawColor "160 157 149 255"
-		scaleImage 1
-				ypos 3
-				xpos 37
+		{
+			ControlName ImagePanel
+			wide 1150
+			tall 2
+			visible 1
+			image "vgui/hud/white"
+			drawColor "160 157 149 255"
+			scaleImage 1
+			ypos 3
+			xpos 37
 
-				pin_to_sibling BtnServerNameTab
-				pin_corner_to_sibling BOTTOM_LEFT
-				pin_to_sibling_corner BOTTOM_LEFT
-	}
+			pin_to_sibling BtnServerNameTab
+			pin_corner_to_sibling BOTTOM_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
 
 		// List:
 		BtnServerDummmyTop {
@@ -2041,7 +1682,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 0
-			wide 1220
+			wide 1120
 			xpos -8
 
 			pin_to_sibling ButtonRowAnchor
@@ -2057,7 +1698,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 1
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer1
 			pin_corner_to_sibling TOP_LEFT
@@ -2072,7 +1713,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 2
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer2
 			pin_corner_to_sibling TOP_LEFT
@@ -2087,7 +1728,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 3
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer3
 			pin_corner_to_sibling TOP_LEFT
@@ -2103,7 +1744,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 4
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer4
 			pin_corner_to_sibling TOP_LEFT
@@ -2118,7 +1759,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 5
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer5
 			pin_corner_to_sibling TOP_LEFT
@@ -2133,7 +1774,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 6
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer6
 			pin_corner_to_sibling TOP_LEFT
@@ -2148,7 +1789,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 7
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer7
 			pin_corner_to_sibling TOP_LEFT
@@ -2163,7 +1804,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 8
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer8
 			pin_corner_to_sibling TOP_LEFT
@@ -2178,7 +1819,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 9
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer9
 			pin_corner_to_sibling TOP_LEFT
@@ -2193,7 +1834,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 10
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer10
 			pin_corner_to_sibling TOP_LEFT
@@ -2208,7 +1849,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 11
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer11
 			pin_corner_to_sibling TOP_LEFT
@@ -2223,7 +1864,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 12
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer12
 			pin_corner_to_sibling TOP_LEFT
@@ -2238,7 +1879,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 13
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer13
 			pin_corner_to_sibling TOP_LEFT
@@ -2253,7 +1894,7 @@ resource/ui/menus/mods_browse.menu
 			InheritProperties RuiSmallButton
 			classname ServerButton
 			scriptID 14
-			wide 1220
+			wide 1120
 
 			pin_to_sibling BtnServer14
 			pin_corner_to_sibling TOP_LEFT
@@ -2272,33 +1913,50 @@ resource/ui/menus/mods_browse.menu
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BtnServerListUpArrow
 	{
-		ControlName RuiButton
+		ControlName BaseModHybridButton
 		InheritProperties RuiSmallButton
 		//labelText "A"
-		wide 40
-		tall 40
-		xpos 2
-		ypos 2
-
-		image "vgui/hud/white"
-		drawColor "255 255 255 128"
+		wide 20
+		tall 20
+		xpos 15
+		ypos -10
+		visible 0
 
 		pin_to_sibling ServerDetailsPanel
 		pin_corner_to_sibling TOP_RIGHT
 		pin_to_sibling_corner TOP_LEFT
 	}
 
+    BtnServerListBackgroundPanel
+    {
+        ControlName ImagePanel
+        wide 20
+        tall 600
+        xpos 1265
+        ypos 190
+        zpos -2
+
+		scaleImage					1
+        visible 0
+        image "vgui/backgroundbar"
+
+		pin_to_sibling ServerDetailsPanel
+		pin_corner_to_sibling TOP_RIGHT
+		pin_to_sibling_corner TOP_LEFT
+    }
+
 	BtnServerListUpArrowPanel
 	{
-		ControlName RuiPanel
-		wide 40
-		tall 40
-		xpos 2
-		ypos 2
+		ControlName ImagePanel
+		wide 20
+		tall 20
+		xpos 1265
+		ypos 170
 
-		rui "ui/control_options_description.rpak"
+		image						"vgui/uparrow"
+		visible						0
+		scaleImage					1
 
-		visible 1
 		zpos -1
 
 		pin_to_sibling ServerDetailsPanel
@@ -2309,15 +1967,13 @@ resource/ui/menus/mods_browse.menu
 	BtnServerListDownArrow
 	{
 		ControlName RuiButton
-		InheritProperties RuiSmallButton
+		InheritProperties BaseModHybridButton
 		//labelText "V"
-		wide 40
-		tall 40
-		xpos 2
-		ypos -604
-
-		image "vgui/hud/white"
-		drawColor "255 255 255 128"
+		wide 20
+		tall 20
+		xpos 15
+		ypos -615
+		visible 0
 
 		pin_to_sibling ServerDetailsPanel
 		pin_corner_to_sibling TOP_RIGHT
@@ -2326,15 +1982,16 @@ resource/ui/menus/mods_browse.menu
 
 	BtnServerListDownArrowPanel
 	{
-		ControlName RuiPanel
-		wide 40
-		tall 40
-		xpos 2
-		ypos -604
+		ControlName ImagePanel
+		wide 20
+		tall 20
+		xpos 1265
+		ypos 775
 
-		rui "ui/control_options_description.rpak"
+		image						"vgui/downarrow"
+		visible						0
+		scaleImage					1
 
-		visible 1
 		zpos -1
 
 		pin_to_sibling ServerDetailsPanel
@@ -2344,17 +2001,14 @@ resource/ui/menus/mods_browse.menu
 
 	BtnServerListSlider
 	{
-		ControlName RuiButton
+		ControlName BaseModHybridButton
 		InheritProperties RuiSmallButton
 		//labelText "V"
-		wide 40
+		wide 20
 		tall 562
-		xpos 2
-		ypos -40
+		xpos 15
+		ypos -42
 		zpos 0
-
-		image "vgui/hud/white"
-		drawColor "255 255 255 128"
 
 		pin_to_sibling ServerDetailsPanel
 		pin_corner_to_sibling TOP_RIGHT
@@ -2363,15 +2017,16 @@ resource/ui/menus/mods_browse.menu
 
 	BtnServerListSliderPanel
 	{
-		ControlName RuiPanel
-		wide 40
+		ControlName ImagePanel
+		wide 20
 		tall 562
-		xpos 2
-		ypos -40
+		xpos 1265
+		ypos 190
 
-		rui "ui/control_options_description.rpak"
+		image "vgui/scrollbar"
 
-		visible 1
+		visible 0
+		scaleImage					1
 		zpos -1
 
 		pin_to_sibling ServerDetailsPanel
@@ -2388,7 +2043,7 @@ resource/ui/menus/mods_browse.menu
 			wide 40
 			tall 562
 			xpos 2
-			ypos -40
+			ypos -42
 			zpos 1
 
 			pin_to_sibling ServerDetailsPanel
@@ -2412,12 +2067,12 @@ resource/ui/menus/mods_browse.menu
 	FilterPanel
 	{
 		ControlName RuiPanel
-		wide 1300
+		wide 1200
 		tall 153
 		xpos -8
 		classname FilterPanelChild
 
-		rui "ui/control_options_description.rpak"
+		rui "ui/basic_menu_image.rpak"
 
 		visible 1
 		zpos -1
@@ -2615,7 +2270,7 @@ resource/ui/menus/mods_browse.menu
 		ServerDetailsPanel
 		{
 			ControlName RuiPanel
-			xpos 1350
+			xpos 1300
 			ypos 160
 			tall 800
 			wide 500
@@ -2822,6 +2477,7 @@ resource/ui/menus/mods_browse.menu
 			xpos -17
 			ypos -57
 			zpos 90
+			textAlignment	north
 
 			scriptID 999
 
@@ -2841,7 +2497,7 @@ resource/ui/menus/mods_browse.menu
 			auto_wide_tocontents 1
 			tall 40
 			labelText "#INGAME_PLAYERS"
-			xpos -250
+			xpos -465
 			ypos 30
 			visible 1
 			zpos 101
@@ -2862,7 +2518,7 @@ resource/ui/menus/mods_browse.menu
 			auto_wide_tocontents 1
 			tall 40
 			labelText "#TOTAL_SERVERS"
-			xpos 46
+			xpos 26
 			visible 1
 			zpos 101
 
